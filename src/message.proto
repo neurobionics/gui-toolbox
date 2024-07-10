@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package message;
+
+service MessageService {
+  rpc GetMessages (Empty) returns (stream Message) {}
+  rpc SendMessage (Message) returns (Empty) {}
+}
+
+message Empty {}
+
+message Message {
+  string content = 1;
+}

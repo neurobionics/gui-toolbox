@@ -4,20 +4,16 @@
 	"description": "Create a GUI for your robot",
 	"version": "0.0.1",
 	"engines": {
-		"vscode": "^1.91.0"
+		"vscode": "^1.70.0"
 	},
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onView:guiToolboxSidebar"
+	],
 	"main": "./dist/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "gui-toolbox.helloWorld",
-				"title": "Hello World"
-			}
-		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -30,11 +26,18 @@
 		"views": {
 			"gui-toolbox-sidebar": [
 				{
-					"id": "gui-toolbox-view",
-					"name": "Toolbox View"
+					"type": "webview",
+					"id": "guiToolboxSidebar",
+					"name": "GUI Toolbox"
 				}
 			]
-		}
+		},
+		"commands": [
+			{
+				"command": "gui-toolbox.startListening",
+				"title": "Start Listening"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
@@ -62,6 +65,7 @@
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
-		"zeromq": "^5.3.1"
+		"@grpc/grpc-js": "^1.10.10",
+		"@grpc/proto-loader": "^0.7.13"
 	}
 }
