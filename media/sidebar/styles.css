@@ -1,0 +1,35 @@
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	width: 90%;
+	height: 100%;
+	margin: 0%;
+	padding: 5%;
+}
+
+button {
+	background-color: #007acc;
+	color: white;
+	border: none;
+	padding: 10px;
+	cursor: pointer;
+	border-radius: 2px;
+}
+button:hover {
+	background-color: #005f99;
+}
+select {
+	background-color: #1e1e1e;
+	color: #d4d4d4;
+	border: 1px solid #007acc;
+	padding: 5px;
+}
+
+input {
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border: 1px solid #007acc;
+	padding: 6px;
+}
