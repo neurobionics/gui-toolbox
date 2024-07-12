@@ -4,6 +4,7 @@ const ipAddressInput = document.getElementById("ipAddress");
 const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 const protoPicker = document.getElementById("protoPicker");
+const protoFile = document.getElementById("protoFile");
 
 startButton.addEventListener("click", () => {
 	console.log("startButton clicked");
@@ -21,8 +22,14 @@ sendButton.addEventListener("click", () => {
 	messageInput.value = "";
 });
 
-protoPicker.addEventListener("click", () => {
-	vscode.postMessage({
-		type: "pickProtoFile",
-	});
+protoFile.addEventListener("change", () => {
+	const file = protoFile.files[0];
+	const reader = new FileReader();
+	reader.onload = (event) => {
+		vscode.postMessage({
+			type: "protoFile",
+			protoFilePath: file.path,
+		});
+	};
+	reader.readAsText(file);
 });

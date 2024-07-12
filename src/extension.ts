@@ -132,24 +132,11 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
-				case "pickProtoFile": {
+				case "protoFile": {
+					this.protoFilePath = data.protoFilePath;
 					vscode.window.showInformationMessage(
-						"Proto file picker opened"
+						`Proto file assigned: ${this.protoFilePath}`
 					);
-					const result = await vscode.window.showOpenDialog({
-						canSelectFiles: true,
-						canSelectFolders: false,
-						canSelectMany: false,
-						filters: {
-							"Proto Files": ["proto"],
-						},
-					});
-					if (result && result[0]) {
-						this.protoFilePath = result[0].fsPath;
-						vscode.window.showInformationMessage(
-							`Proto file assigned: ${this.protoFilePath}`
-						);
-					}
 					break;
 				}
 				case "startListening": {
@@ -216,7 +203,7 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 		let html = fs.readFileSync(htmlPath.fsPath, "utf-8");
 
 		html = html
-			.replace('href="style.css"', `href="${cssUri}"`)
+			.replace('href="styles.css"', `href="${cssUri}"`)
 			.replace('src="script.js"', `src="${scriptUri}"`);
 
 		return html;
