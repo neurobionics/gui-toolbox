@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import * as path from "path";
+import * as fs from "fs";
 
 const PROTO_PATH = path.resolve(__dirname, "../src/message.proto");
 
@@ -25,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let client: any = null;
 
-	const sidebarProvider = new GuiToolboxSidebarProvider(context.extensionUri);
+	const sidebarProvider = new GuiToolboxSidebarProvider(context);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			"guiToolboxSidebar",
@@ -96,22 +97,44 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	const assignProtoFileCommand = vscode.commands.registerCommand(
+		"gui-toolbox.assignProtoFile",
+		(file: vscode.Uri) => {
+			guiLogger.appendLine(`File assigned: ${file.fsPath}`);
+		}
+	);
+
 	context.subscriptions.push(startListeningCommand, sendMessageCommand);
 }
 
 class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
-	constructor(private readonly _extensionUri: vscode.Uri) {}
+	constructor(private readonly context: vscode.ExtensionContext) {}
 
-	public resolveWebviewView(webviewView: vscode.WebviewView) {
+	public resolveWebviewView(
+		webviewView: vscode.WebviewView,
+		context: vscode.WebviewViewResolveContext,
+		_token: vscode.CancellationToken
+	) {
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [this._extensionUri],
+			localResourceRoots: [
+				vscode.Uri.file(
+					path.join(this.context.extensionPath, "media", "sidebar")
+				),
+			],
 		};
 
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+		webviewView.webview.html = this._getWebviewContent(webviewView.webview);
 
 		webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
+				case "assignProtoFile": {
+					vscode.commands.executeCommand(
+						"gui-toolbox.assignProtoFile",
+						data.file
+					);
+					break;
+				}
 				case "startListening": {
 					vscode.commands.executeCommand(
 						"gui-toolbox.startListening",
@@ -130,47 +153,45 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 		});
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview) {
-		return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>GUI Toolbox</title>
-      </head>
-      <body>
-        <input type="text" id="ipAddress" placeholder="Enter IP Address" value="localhost">
-        <button id="startButton">Start Listening</button>
-        <br><br>
-        <input type="text" id="messageInput" placeholder="Enter message">
-        <button id="sendButton">Send Message</button>
+	private _getWebviewContent(webview: vscode.Webview) {
+		const htmlPath = vscode.Uri.file(
+			path.join(
+				this.context.extensionPath,
+				"media",
+				"sidebar",
+				"webview.html"
+			)
+		);
 
-        <script>
-          const vscode = acquireVsCodeApi();
-          const startButton = document.getElementById('startButton');
-          const ipAddressInput = document.getElementById('ipAddress');
-          const messageInput = document.getElementById('messageInput');
-          const sendButton = document.getElementById('sendButton');
+		const cssPath = vscode.Uri.file(
+			path.join(
+				this.context.extensionPath,
+				"media",
+				"sidebar",
+				"styles.css"
+			)
+		);
 
-          startButton.addEventListener('click', () => {
-            vscode.postMessage({
-              type: 'startListening',
-              ipAddress: ipAddressInput.value
-            });
-          });
+		const cssUri = webview.asWebviewUri(cssPath);
 
-          sendButton.addEventListener('click', () => {
-            vscode.postMessage({
-              type: 'sendMessage',
-              message: messageInput.value
-            });
-            messageInput.value = '';
-          });
-        </script>
-      </body>
-      </html>
-    `;
+		const scriptPath = vscode.Uri.file(
+			path.join(
+				this.context.extensionPath,
+				"media",
+				"sidebar",
+				"script.js"
+			)
+		);
+
+		const scriptUri = webview.asWebviewUri(scriptPath);
+
+		let html = fs.readFileSync(htmlPath.fsPath, "utf-8");
+
+		html = html
+			.replace('href="styles.css"', `href="${cssUri}"`)
+			.replace('src="script.js"', `src="${scriptUri}"`);
+
+		return html;
 	}
 }
 
