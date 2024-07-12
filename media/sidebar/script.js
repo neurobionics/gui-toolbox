@@ -14,14 +14,6 @@ startButton.addEventListener("click", () => {
 	});
 });
 
-sendButton.addEventListener("click", () => {
-	vscode.postMessage({
-		type: "sendMessage",
-		message: messageInput.value,
-	});
-	messageInput.value = "";
-});
-
 protoFile.addEventListener("change", () => {
 	const file = protoFile.files[0];
 	const reader = new FileReader();
@@ -32,4 +24,12 @@ protoFile.addEventListener("change", () => {
 		});
 	};
 	reader.readAsText(file);
+});
+
+messageInput.addEventListener("change", () => {
+	vscode.postMessage({
+		type: "sendMessage",
+		message: messageInput.value,
+	});
+	messageInput.value = "";
 });
