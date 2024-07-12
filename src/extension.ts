@@ -4,19 +4,6 @@ import * as protoLoader from "@grpc/proto-loader";
 import * as path from "path";
 import * as fs from "fs";
 
-const PROTO_PATH = path.resolve(__dirname, "../src/message.proto");
-
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-	keepCase: true,
-	longs: String,
-	enums: String,
-	defaults: true,
-	oneofs: true,
-});
-
-const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
-const messageService = protoDescriptor.message.MessageService;
-
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
 	guiLogger.show();
@@ -41,8 +28,31 @@ export function activate(context: vscode.ExtensionContext) {
 				guiLogger.appendLine("gRPC client already exists.");
 				return;
 			}
+			const protoPath = sidebarProvider.getProtoFilePath();
+			if (!protoPath) {
+				vscode.window.showErrorMessage(
+					"Please select a proto file first."
+				);
+				return;
+			}
 
-			guiLogger.appendLine(`Creating gRPC client for ${ipAddress}...`);
+			guiLogger.appendLine(
+				`Creating gRPC client for ${ipAddress} using proto file: ${protoPath}`
+			);
+
+			const packageDefinition = protoLoader.loadSync(protoPath, {
+				keepCase: true,
+				longs: String,
+				enums: String,
+				defaults: true,
+				oneofs: true,
+			});
+
+			const protoDescriptor = grpc.loadPackageDefinition(
+				packageDefinition
+			) as any;
+			const messageService = protoDescriptor.message.MessageService;
+
 			client = new messageService(
 				`${ipAddress}:50051`,
 				grpc.credentials.createInsecure()
@@ -97,17 +107,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
-	const assignProtoFileCommand = vscode.commands.registerCommand(
-		"gui-toolbox.assignProtoFile",
-		(file: vscode.Uri) => {
-			guiLogger.appendLine(`File assigned: ${file.fsPath}`);
-		}
-	);
-
 	context.subscriptions.push(startListeningCommand, sendMessageCommand);
 }
 
 class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
+	private protoFilePath: string | null = null;
 	constructor(private readonly context: vscode.ExtensionContext) {}
 
 	public resolveWebviewView(
@@ -128,14 +132,31 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
-				case "assignProtoFile": {
-					vscode.commands.executeCommand(
-						"gui-toolbox.assignProtoFile",
-						data.file
+				case "pickProtoFile": {
+					vscode.window.showInformationMessage(
+						"Proto file picker opened"
 					);
+					const result = await vscode.window.showOpenDialog({
+						canSelectFiles: true,
+						canSelectFolders: false,
+						canSelectMany: false,
+						filters: {
+							"Proto Files": ["proto"],
+						},
+					});
+					if (result && result[0]) {
+						this.protoFilePath = result[0].fsPath;
+						vscode.window.showInformationMessage(
+							`Proto file assigned: ${this.protoFilePath}`
+						);
+					}
 					break;
 				}
 				case "startListening": {
+					vscode.window.showInformationMessage(
+						"Start listening command received"
+					);
+
 					vscode.commands.executeCommand(
 						"gui-toolbox.startListening",
 						data.ipAddress
@@ -143,6 +164,9 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					break;
 				}
 				case "sendMessage": {
+					vscode.window.showInformationMessage(
+						"Send message command received"
+					);
 					vscode.commands.executeCommand(
 						"gui-toolbox.sendMessage",
 						data.message
@@ -151,6 +175,10 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 				}
 			}
 		});
+	}
+
+	public getProtoFilePath(): string | null {
+		return this.protoFilePath;
 	}
 
 	private _getWebviewContent(webview: vscode.Webview) {
@@ -188,7 +216,7 @@ class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 		let html = fs.readFileSync(htmlPath.fsPath, "utf-8");
 
 		html = html
-			.replace('href="styles.css"', `href="${cssUri}"`)
+			.replace('href="style.css"', `href="${cssUri}"`)
 			.replace('src="script.js"', `src="${scriptUri}"`);
 
 		return html;
