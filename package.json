@@ -36,6 +36,10 @@
 			{
 				"command": "gui-toolbox.startListening",
 				"title": "Start Listening"
+			},
+			{
+				"command": "gui-toolbox.addGUIPanel",
+				"title": "Add GUI Panel"
 			}
 		]
 	},

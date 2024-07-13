@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
-import { GuiToolboxSidebarProvider } from "./sidebar";
+import { GuiToolboxSidebarProvider } from "./sidebarPanel";
+import { GUIPanelProvider } from "./guiPanel";
 
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
@@ -11,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	let client: any = null;
+	let guiPanel: vscode.WebviewPanel | undefined;
 
 	const sidebarProvider = new GuiToolboxSidebarProvider(context);
 	context.subscriptions.push(
@@ -18,6 +20,32 @@ export function activate(context: vscode.ExtensionContext) {
 			"guiToolboxSidebar",
 			sidebarProvider
 		)
+	);
+
+	const addGUIPanelCommand = vscode.commands.registerCommand(
+		"gui-toolbox.addGUIPanel",
+		() => {
+			if (guiPanel) {
+				guiPanel.reveal(vscode.ViewColumn.Two);
+			} else {
+				guiPanel = vscode.window.createWebviewPanel(
+					"guiPanel",
+					"GUI Panel",
+					vscode.ViewColumn.Two,
+					{
+						enableScripts: true,
+						retainContextWhenHidden: true,
+					}
+				);
+				const guiPanelProvider = new GUIPanelProvider(context);
+				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
+					guiPanel.webview
+				);
+				guiPanel.onDidDispose(() => {
+					guiPanel = undefined;
+				});
+			}
+		}
 	);
 
 	const startListeningCommand = vscode.commands.registerCommand(
@@ -59,11 +87,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const call = client.getMessages({});
 
-			call.on("data", (message: { content: string }) => {
-				console.log("Received from Python:", message.content);
-				guiLogger.appendLine(
-					`Received from Python: ${message.content}`
-				);
+			call.on("data", (message: { value: number }) => {
+				guiLogger.appendLine(`Received from Python: ${message.value}`);
+				if (guiPanel) {
+					guiPanel.webview.postMessage({
+						type: "updatePlot",
+						value: message.value,
+					});
+				}
 			});
 
 			call.on("error", (error: Error) => {
@@ -106,7 +137,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
-	context.subscriptions.push(startListeningCommand, sendMessageCommand);
+	context.subscriptions.push(
+		startListeningCommand,
+		sendMessageCommand,
+		addGUIPanelCommand
+	);
 }
 
 export function deactivate() {}

@@ -2,9 +2,8 @@ const vscode = acquireVsCodeApi();
 const startButton = document.getElementById("startButton");
 const ipAddressInput = document.getElementById("ipAddress");
 const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendButton");
-const protoPicker = document.getElementById("protoPicker");
 const protoFile = document.getElementById("protoFile");
+const addGUIPanelButton = document.getElementById("addGUIPanelButton");
 
 startButton.addEventListener("click", () => {
 	console.log("startButton clicked");
@@ -32,4 +31,10 @@ messageInput.addEventListener("change", () => {
 		message: messageInput.value,
 	});
 	messageInput.value = "";
+});
+
+addGUIPanelButton.addEventListener("click", () => {
+	vscode.postMessage({
+		type: "addGUIPanel",
+	});
 });
