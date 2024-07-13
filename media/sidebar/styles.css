@@ -9,6 +9,91 @@ body {
 	padding: 5%;
 }
 
+.variableInputs {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	gap: 5px;
+	padding: 5px;
+	border: #808080 1px solid;
+	border-radius: 2px;
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+.variableInputs h3 {
+	margin: 5px;
+}
+
+#variableInputsContainer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+}
+
+#variableInputsButtons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
+#variableInputsButtons button {
+	width: 100%;
+}
+
+.sliderInputs {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	gap: 5px;
+	padding: 5px;
+	border: #808080 1px solid;
+	border-radius: 2px;
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.sliderInputs h3 {
+	margin: 5px;
+}
+
+#sliderInputsContainer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+}
+
+#sliderInputsButtons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
+#sliderInputsButtons button {
+	width: 100%;
+}
+
+.sliderInput {
+	/* each div has 4 input text boxes and we want them to display as a 2x2 grid */
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 5px;
+	padding: 5px;
+	border: #808080 1px solid;
+}
+
+.sliderInput input {
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 button {
 	background-color: #007acc;
 	color: white;

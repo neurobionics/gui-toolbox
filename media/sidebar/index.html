@@ -14,11 +14,31 @@
 			value="localhost"
 		/>
 		<input type="file" id="protoFile" />
-        <br></br>
+
 		<button id="startButton">Connect</button>
-        <br></br>
+
+		<div class="variableInputs">
+			<h3>Variables</h3>
+			<div id="variableInputsContainer"></div>
+			<div id="variableInputsButtons">
+				<button onclick="addVariableInput()">Add</button>
+				<button onclick="setVariableInputs()">Set</button>
+				<button onclick="removeVariableInput()">Remove</button>
+			</div>
+		</div>
+
+		<div class="sliderInputs">
+			<h3>Sliders</h3>
+			<div id="sliderInputsContainer"></div>
+			<div id="sliderInputsButtons">
+				<button onclick="addSliderInput()">Add</button>
+				<button onclick="setSliderInputs()">Set</button>
+				<button onclick="removeSliderInput()">Remove</button>
+			</div>
+		</div>
+
 		<button id="openGUIPanelButton">Open GUI</button>
-        <input type="text" id="messageInput" placeholder=">>> console" />
+		<input type="text" id="messageInput" placeholder=">>> console" />
 
 		<script src="script.js"></script>
 	</body>
