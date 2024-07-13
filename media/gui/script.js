@@ -10,7 +10,7 @@ let yMax = null;
 let autoScale = true;
 
 let layout = {
-	title: "Real-time Plot",
+	// title: "Real-time Plot",
 	font: { color: "#ffffff" },
 	paper_bgcolor: "#1e1e1e",
 	plot_bgcolor: "#1e1e1e",
