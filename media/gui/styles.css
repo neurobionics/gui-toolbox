@@ -3,9 +3,15 @@ body {
 	color: #ffffff;
 	font-family: Arial, sans-serif;
 }
-#variableSelect {
+#variableSelect,
+input {
 	margin-bottom: 10px;
 	background-color: #2d2d2d;
 	color: #ffffff;
 	border: 1px solid #444;
+}
+#axisControls {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
 }
