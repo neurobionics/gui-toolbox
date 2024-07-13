@@ -38,8 +38,8 @@
 				"title": "Start Listening"
 			},
 			{
-				"command": "gui-toolbox.addGUIPanel",
-				"title": "Add GUI Panel"
+				"command": "gui-toolbox.openGUIPanel",
+				"title": "Open GUI"
 			}
 		]
 	},

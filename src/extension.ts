@@ -25,8 +25,8 @@ export function activate(context: vscode.ExtensionContext) {
 		)
 	);
 
-	const addGUIPanelCommand = vscode.commands.registerCommand(
-		"gui-toolbox.addGUIPanel",
+	const openGUIPanelCommand = vscode.commands.registerCommand(
+		"gui-toolbox.openGUIPanel",
 		() => {
 			if (guiPanel) {
 				guiPanel.reveal(vscode.ViewColumn.Active);
@@ -152,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		startListeningCommand,
 		sendMessageCommand,
-		addGUIPanelCommand
+		openGUIPanelCommand
 	);
 }
 

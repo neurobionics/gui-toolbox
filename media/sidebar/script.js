@@ -3,7 +3,7 @@ const startButton = document.getElementById("startButton");
 const ipAddressInput = document.getElementById("ipAddress");
 const messageInput = document.getElementById("messageInput");
 const protoFile = document.getElementById("protoFile");
-const addGUIPanelButton = document.getElementById("addGUIPanelButton");
+const openGUIPanelButton = document.getElementById("openGUIPanelButton");
 
 startButton.addEventListener("click", () => {
 	console.log("startButton clicked");
@@ -33,8 +33,8 @@ messageInput.addEventListener("change", () => {
 	messageInput.value = "";
 });
 
-addGUIPanelButton.addEventListener("click", () => {
+openGUIPanelButton.addEventListener("click", () => {
 	vscode.postMessage({
-		type: "addGUIPanel",
+		type: "openGUIPanel",
 	});
 });

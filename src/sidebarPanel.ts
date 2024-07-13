@@ -52,11 +52,11 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					);
 					break;
 				}
-				case "addGUIPanel": {
+				case "openGUIPanel": {
 					vscode.window.showInformationMessage(
-						"Add GUI panel command received"
+						"Open GUI panel command received"
 					);
-					vscode.commands.executeCommand("gui-toolbox.addGUIPanel");
+					vscode.commands.executeCommand("gui-toolbox.openGUIPanel");
 					break;
 				}
 			}

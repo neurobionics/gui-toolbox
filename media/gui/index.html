@@ -3,24 +3,43 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>GUI Panel</title>
+		<title>GUI Toolbox</title>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="styles.css" />
 	</head>
 	<body>
-		<div id="plot"></div>
-		<select id="variableSelect"></select>
-		<div id="axisControls">
-			<div>
-				<label for="yMin">Y Min:</label>
-				<input type="number" id="yMin" placeholder="Auto" />
-			</div>
-			<div>
-				<label for="yMax">Y Max:</label>
-				<input type="number" id="yMax" placeholder="Auto" />
-			</div>
-			<button id="applyYAxis">Apply</button>
+		<div>
+			<p>
+				Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nisi
+				at neque provident nostrum rem, optio quos ab tenetur asperiores
+				enim maiores doloremque placeat laborum eum facilis labore
+				voluptatum cumque vitae?
+			</p>
 		</div>
+		<div id="plotContainer">
+			<div id="plot"></div>
+			<div id="plotControls">
+				<select id="variableSelect"></select>
+				<div id="axisControls">
+					<div>
+						<input
+							type="number"
+							id="yMin"
+							placeholder="Y-axis Min: Auto"
+						/>
+					</div>
+					<div>
+						<input
+							type="number"
+							id="yMax"
+							placeholder="Y-axis Max: Auto"
+						/>
+					</div>
+					<button id="applyYAxis">Apply</button>
+				</div>
+			</div>
+		</div>
+
 		<script>
 			const VARIABLES = []; // This will be replaced with actual variables
 		</script>
