@@ -3,7 +3,10 @@ import * as path from "path";
 import * as fs from "fs";
 
 export class GUIPanelProvider {
-	constructor(private readonly context: vscode.ExtensionContext) {}
+	constructor(
+		private readonly context: vscode.ExtensionContext,
+		private readonly variables: string[]
+	) {}
 
 	public getWebviewContent(webview: vscode.Webview): string {
 		const htmlPath = vscode.Uri.file(
@@ -21,7 +24,16 @@ export class GUIPanelProvider {
 				)
 			)
 		);
+
+		// Replace script src
 		html = html.replace('src="script.js"', `src="${scriptUri}"`);
+
+		// Insert variables into HTML
+		const variablesJson = JSON.stringify(this.variables);
+		html = html.replace(
+			"const VARIABLES = [];",
+			`const VARIABLES = ${variablesJson};`
+		);
 
 		return html;
 	}

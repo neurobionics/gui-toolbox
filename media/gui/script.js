@@ -1,3 +1,5 @@
+const vscode = acquireVsCodeApi();
+
 let trace = {
 	y: [],
 	type: "scatter",
@@ -10,28 +12,54 @@ let layout = {
 Plotly.newPlot("plot", [trace], layout);
 
 let count = 0;
+let selectedVariable = "";
+
+// Populate the select element with variables
+const selectElement = document.getElementById("variableSelect");
+VARIABLES.forEach((variable) => {
+	const option = document.createElement("option");
+	option.value = variable;
+	option.textContent = variable;
+	selectElement.appendChild(option);
+});
+
+// Set initial selected variable
+if (VARIABLES.length > 0) {
+	selectedVariable = VARIABLES[0];
+	selectElement.value = selectedVariable;
+}
+
+selectElement.addEventListener("change", (event) => {
+	selectedVariable = event.target.value;
+	// Reset the plot when changing variables
+	trace.y = [];
+	count = 0;
+	Plotly.react("plot", [trace], layout);
+});
 
 window.addEventListener("message", (event) => {
 	const message = event.data;
 	switch (message.type) {
 		case "updatePlot":
-			Plotly.extendTraces("plot", { y: [[message.value]] }, [0]);
-			count++;
-			if (count > 500) {
-				Plotly.relayout("plot", {
-					xaxis: {
-						range: [count - 500, count],
-					},
-				});
+			const data = message.data;
+			if (selectedVariable in data) {
+				Plotly.extendTraces("plot", { y: [[data[selectedVariable]]] }, [
+					0,
+				]);
+				count++;
+				if (count > 500) {
+					Plotly.relayout("plot", {
+						xaxis: {
+							range: [count - 500, count],
+						},
+					});
+				}
 			}
 			break;
-		// You can add more cases here for different types of messages
-		// For example, to handle button clicks or update other GUI elements
 	}
 });
 
 // You can add functions here to create and manage buttons
-// For example:
 function addButton(label, functionName) {
 	const button = document.createElement("button");
 	button.textContent = label;
@@ -41,8 +69,5 @@ function addButton(label, functionName) {
 			function: functionName,
 		});
 	};
-	document.getElementById("controls").appendChild(button);
+	document.body.appendChild(button);
 }
-
-// Call this function to add buttons as needed
-// addButton('My Function', 'myPythonFunction');

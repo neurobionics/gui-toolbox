@@ -3,6 +3,9 @@ import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import { GuiToolboxSidebarProvider } from "./sidebarPanel";
 import { GUIPanelProvider } from "./guiPanel";
+import * as fs from "fs";
+
+let variables: string[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
@@ -26,18 +29,21 @@ export function activate(context: vscode.ExtensionContext) {
 		"gui-toolbox.addGUIPanel",
 		() => {
 			if (guiPanel) {
-				guiPanel.reveal(vscode.ViewColumn.Two);
+				guiPanel.reveal(vscode.ViewColumn.Active);
 			} else {
 				guiPanel = vscode.window.createWebviewPanel(
 					"guiPanel",
 					"GUI Panel",
-					vscode.ViewColumn.Two,
+					vscode.ViewColumn.Active,
 					{
 						enableScripts: true,
 						retainContextWhenHidden: true,
 					}
 				);
-				const guiPanelProvider = new GUIPanelProvider(context);
+				const guiPanelProvider = new GUIPanelProvider(
+					context,
+					variables
+				);
 				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
 					guiPanel.webview
 				);
@@ -50,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const startListeningCommand = vscode.commands.registerCommand(
 		"gui-toolbox.startListening",
-		(ipAddress: string) => {
+		async (ipAddress: string) => {
 			if (client) {
 				guiLogger.appendLine("gRPC client already exists.");
 				return;
@@ -63,11 +69,15 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
+			// Parse the proto file to extract variable names
+			const protoContent = fs.readFileSync(protoPath, "utf8");
+			variables = extractVariables(protoContent);
+
 			guiLogger.appendLine(
 				`Creating gRPC client for ${ipAddress} using proto file: ${protoPath}`
 			);
 
-			const packageDefinition = protoLoader.loadSync(protoPath, {
+			const packageDefinition = await protoLoader.load(protoPath, {
 				keepCase: true,
 				longs: String,
 				enums: String,
@@ -78,21 +88,23 @@ export function activate(context: vscode.ExtensionContext) {
 			const protoDescriptor = grpc.loadPackageDefinition(
 				packageDefinition
 			) as any;
-			const messageService = protoDescriptor.message.MessageService;
+			const dynamicService = protoDescriptor.dynamic.DynamicService;
 
-			client = new messageService(
+			client = new dynamicService(
 				`${ipAddress}:50051`,
 				grpc.credentials.createInsecure()
 			);
 
-			const call = client.getMessages({});
+			const call = client.getUpdates({});
 
-			call.on("data", (message: { value: number }) => {
-				guiLogger.appendLine(`Received from Python: ${message.value}`);
+			call.on("data", (message: any) => {
+				guiLogger.appendLine(
+					`Received from Python: ${JSON.stringify(message)}`
+				);
 				if (guiPanel) {
 					guiPanel.webview.postMessage({
 						type: "updatePlot",
-						value: message.value,
+						data: message,
 					});
 				}
 			});
@@ -118,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			client.sendMessage(
+			client.sendUpdate(
 				{ content: message },
 				(error: Error | null, response: any) => {
 					if (error) {
@@ -142,6 +154,24 @@ export function activate(context: vscode.ExtensionContext) {
 		sendMessageCommand,
 		addGUIPanelCommand
 	);
+}
+
+function extractVariables(protoContent: string): string[] {
+	const messageRegex = /message\s+UpdateMessage\s*{([^}]*)}/;
+	const fieldRegex = /\s*(\w+)\s+(\w+)\s*=\s*\d+;/g;
+
+	const messageMatch = protoContent.match(messageRegex);
+	if (!messageMatch) {
+		return [];
+	}
+
+	const messageContent = messageMatch[1];
+	const variables: string[] = [];
+	let match;
+	while ((match = fieldRegex.exec(messageContent)) !== null) {
+		variables.push(match[2]); // match[2] is the variable name
+	}
+	return variables;
 }
 
 export function deactivate() {}

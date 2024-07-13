@@ -5,10 +5,21 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>GUI Panel</title>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+			}
+			#variableSelect {
+				margin-bottom: 10px;
+			}
+		</style>
 	</head>
 	<body>
+		<select id="variableSelect"></select>
 		<div id="plot"></div>
-		<div id="controls"></div>
+		<script>
+			const VARIABLES = []; // This will be replaced with actual variables
+		</script>
 		<script src="script.js"></script>
 	</body>
 </html>
