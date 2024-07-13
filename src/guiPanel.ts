@@ -1,10 +1,16 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
 
 export class GUIPanelProvider {
 	constructor(private readonly context: vscode.ExtensionContext) {}
 
 	public getWebviewContent(webview: vscode.Webview): string {
+		const htmlPath = vscode.Uri.file(
+			path.join(this.context.extensionPath, "media", "gui", "index.html")
+		);
+		let html = fs.readFileSync(htmlPath.fsPath, "utf-8");
+
 		const scriptUri = webview.asWebviewUri(
 			vscode.Uri.file(
 				path.join(
@@ -15,22 +21,8 @@ export class GUIPanelProvider {
 				)
 			)
 		);
+		html = html.replace('src="script.js"', `src="${scriptUri}"`);
 
-		return `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>GUI Panel</title>
-                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-            </head>
-            <body>
-                <div id="plot"></div>
-                <div id="controls"></div>
-                <script src="${scriptUri}"></script>
-            </body>
-            </html>
-        `;
+		return html;
 	}
 }

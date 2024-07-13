@@ -73,7 +73,7 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 				this.context.extensionPath,
 				"media",
 				"sidebar",
-				"webview.html"
+				"index.html"
 			)
 		);
 
