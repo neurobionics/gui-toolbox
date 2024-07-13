@@ -1,18 +1,51 @@
 const vscode = acquireVsCodeApi();
-
-let trace = {
-	y: [],
-	type: "scatter",
-};
+const MAX_POINTS = 200; // Number of points to show in the sliding window
+let data = [];
+let xData = [];
+let yMin = Infinity;
+let yMax = -Infinity;
 
 let layout = {
 	title: "Real-time Plot",
+	font: { color: "#ffffff" },
+	paper_bgcolor: "#1e1e1e",
+	plot_bgcolor: "#1e1e1e",
+	xaxis: {
+		gridcolor: "#444",
+		zerolinecolor: "#666",
+		title: "Time (s)",
+	},
+	yaxis: {
+		gridcolor: "#444",
+		zerolinecolor: "#666",
+		title: "Value",
+	},
+	datarevision: 0,
 };
 
-Plotly.newPlot("plot", [trace], layout);
+let config = {
+	responsive: true,
+	displayModeBar: false, // Hide the modebar for better performance
+};
+
+Plotly.newPlot(
+	"plot",
+	[
+		{
+			x: xData,
+			y: data,
+			type: "scatter",
+			mode: "lines",
+			line: { color: "#00ff00" },
+		},
+	],
+	layout,
+	config
+);
 
 let count = 0;
 let selectedVariable = "";
+let startTime = Date.now();
 
 // Populate the select element with variables
 const selectElement = document.getElementById("variableSelect");
@@ -32,30 +65,69 @@ if (VARIABLES.length > 0) {
 selectElement.addEventListener("change", (event) => {
 	selectedVariable = event.target.value;
 	// Reset the plot when changing variables
-	trace.y = [];
+	data = [];
+	xData = [];
 	count = 0;
-	Plotly.react("plot", [trace], layout);
+	yMin = Infinity;
+	yMax = -Infinity;
+	startTime = Date.now();
+	Plotly.update("plot", { x: [xData], y: [data] });
 });
+
+// Use a more efficient update method
+function efficientUpdate(newData) {
+	const currentTime = (Date.now() - startTime) / 1000; // Time in seconds
+	data.push(newData);
+	xData.push(currentTime);
+	if (data.length > MAX_POINTS) {
+		data.shift();
+		xData.shift();
+	}
+
+	// Update y-axis range
+	yMin = Math.min(yMin, newData);
+	yMax = Math.max(yMax, newData);
+	const yRange = yMax - yMin;
+	const newYMin = yMin - yRange * 0.1;
+	const newYMax = yMax + yRange * 0.1;
+
+	// Update only the data and layout, which is more efficient
+	Plotly.update(
+		"plot",
+		{ x: [xData], y: [data] },
+		{
+			xaxis: { range: [xData[0], xData[xData.length - 1]] },
+			yaxis: { range: [newYMin, newYMax] },
+			datarevision: count,
+		}
+	);
+
+	count++;
+}
+
+// Debounce function to limit update frequency
+function debounce(func, wait) {
+	let timeout;
+	return function executedFunction(...args) {
+		const later = () => {
+			clearTimeout(timeout);
+			func(...args);
+		};
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+	};
+}
+
+// Debounced update function
+const debouncedUpdate = debounce(efficientUpdate, 16); // ~60fps
 
 window.addEventListener("message", (event) => {
 	const message = event.data;
-	switch (message.type) {
-		case "updatePlot":
-			const data = message.data;
-			if (selectedVariable in data) {
-				Plotly.extendTraces("plot", { y: [[data[selectedVariable]]] }, [
-					0,
-				]);
-				count++;
-				if (count > 500) {
-					Plotly.relayout("plot", {
-						xaxis: {
-							range: [count - 500, count],
-						},
-					});
-				}
-			}
-			break;
+	if (message.type === "updatePlot") {
+		const data = message.data;
+		if (selectedVariable in data) {
+			debouncedUpdate(data[selectedVariable]);
+		}
 	}
 });
 

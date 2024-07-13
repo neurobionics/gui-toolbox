@@ -25,8 +25,21 @@ export class GUIPanelProvider {
 			)
 		);
 
+		const cssUri = webview.asWebviewUri(
+			vscode.Uri.file(
+				path.join(
+					this.context.extensionPath,
+					"media",
+					"gui",
+					"styles.css"
+				)
+			)
+		);
+
 		// Replace script src
-		html = html.replace('src="script.js"', `src="${scriptUri}"`);
+		html = html
+			.replace('src="script.js"', `src="${scriptUri}"`)
+			.replace('href="styles.css"', `href="${cssUri}"`);
 
 		// Insert variables into HTML
 		const variablesJson = JSON.stringify(this.variables);
