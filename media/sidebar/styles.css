@@ -94,6 +94,65 @@ body {
 	box-sizing: border-box;
 }
 
+.buttonInputs {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	gap: 5px;
+	padding: 5px;
+	border: #808080 1px solid;
+	border-radius: 2px;
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.buttonInputs h3 {
+	margin: 5px;
+}
+
+#buttonInputsContainer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+}
+
+#buttonInputsButtons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
+#buttonInputsButtons button {
+	width: 100%;
+}
+
+.buttonInput {
+	/* each div has 4 input text boxes and we want them to display as a 2x2 grid */
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 5px;
+	padding: 5px;
+	border: #808080 1px solid;
+}
+
+.buttonInput input:nth-child(1),
+.buttonInput input:nth-child(2) {
+	grid-column: span 1;
+}
+
+.buttonInput input:nth-child(3) {
+	grid-column: span 2;
+}
+
+.buttonInput input {
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 button {
 	background-color: #007acc;
 	color: white;
