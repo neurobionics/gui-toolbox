@@ -5,7 +5,8 @@ import * as fs from "fs";
 export class GUIPanelProvider {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
-		private readonly variables: string[]
+		private readonly variables: string[],
+		private readonly variable_inputs: string[]
 	) {}
 
 	public getWebviewContent(webview: vscode.Webview): string {
@@ -42,11 +43,17 @@ export class GUIPanelProvider {
 			.replace('href="styles.css"', `href="${cssUri}"`);
 
 		// Insert variables into HTML
-		const variablesJson = JSON.stringify(this.variables);
-		html = html.replace(
-			"const VARIABLES = [];",
-			`const VARIABLES = ${variablesJson};`
-		);
+		html = html
+			.replace(
+				"const VARIABLES = [];",
+				`const VARIABLES = ${JSON.stringify(this.variables)};`
+			)
+			.replace(
+				"const VARIABLE_INPUTS = [];",
+				`const VARIABLE_INPUTS = ${JSON.stringify(
+					this.variable_inputs
+				)};`
+			);
 
 		return html;
 	}

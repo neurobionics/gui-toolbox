@@ -135,7 +135,7 @@ function addButtonInputs() {
 	buttonNameInput.placeholder = "Button Name";
 	const callbackFunctionInput = document.createElement("input");
 	callbackFunctionInput.type = "text";
-	callbackFunctionInput.placeholder = "Callback Function Name";
+	callbackFunctionInput.placeholder = "Callback Name";
 	const argumentsInput = document.createElement("input");
 	argumentsInput.type = "text";
 	argumentsInput.placeholder = "Arguments (comma separated)";

@@ -7,6 +7,8 @@ import * as fs from "fs";
 
 let variables: string[] = [];
 
+let variable_inputs: string[] = [];
+
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
 	guiLogger.show();
@@ -42,7 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
 				);
 				const guiPanelProvider = new GUIPanelProvider(
 					context,
-					variables
+					variables,
+					variable_inputs
 				);
 				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
 					guiPanel.webview
@@ -149,10 +152,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	const setVariablesCommand = vscode.commands.registerCommand(
+		"gui-toolbox.setVariables",
+		(newVariables: string[]) => {
+			guiLogger.appendLine(`Setting variables: ${newVariables}`);
+			variable_inputs = newVariables;
+		}
+	);
+
 	context.subscriptions.push(
 		startListeningCommand,
 		sendMessageCommand,
-		openGUIPanelCommand
+		openGUIPanelCommand,
+		setVariablesCommand
 	);
 }
 

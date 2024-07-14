@@ -176,14 +176,23 @@ window.addEventListener("message", (event) => {
 });
 
 // You can add functions here to create and manage buttons
-function addButton(label, functionName) {
-	const button = document.createElement("button");
-	button.textContent = label;
-	button.onclick = () => {
-		vscode.postMessage({
-			type: "buttonClick",
-			function: functionName,
-		});
-	};
-	document.body.appendChild(button);
-}
+const variableInputsContainer = document.getElementById(
+	"variableInputsContainer"
+);
+VARIABLE_INPUTS.forEach((variable) => {
+	const variable_input = document.createElement("div");
+	variable_input.className = "variable_input";
+
+	const variable_name = document.createElement("label");
+	variable_name.textContent = variable;
+	variable_input.appendChild(variable_name);
+
+	const variable_input_field = document.createElement("input");
+	variable_input_field.type = "number";
+	variable_input_field.value = 0;
+	variable_input_field.id = variable;
+
+	variable_input.appendChild(variable_name);
+	variable_input.appendChild(variable_input_field);
+	variableInputsContainer.appendChild(variable_input);
+});

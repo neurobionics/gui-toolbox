@@ -59,6 +59,40 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					vscode.commands.executeCommand("gui-toolbox.openGUIPanel");
 					break;
 				}
+
+				case "setVariables": {
+					vscode.window.showInformationMessage(
+						"Set variables command received"
+					);
+					vscode.commands.executeCommand(
+						"gui-toolbox.setVariables",
+						data.variables
+					);
+					break;
+				}
+
+				case "setSliders": {
+					vscode.window.showInformationMessage(
+						"Set sliders command received"
+					);
+					vscode.commands.executeCommand(
+						"gui-toolbox.setSliders",
+						data.sliders
+					);
+
+					break;
+				}
+
+				case "setButtons": {
+					vscode.window.showInformationMessage(
+						"Set buttons command received"
+					);
+					vscode.commands.executeCommand(
+						"gui-toolbox.setButtons",
+						data.buttons
+					);
+					break;
+				}
 			}
 		});
 	}
