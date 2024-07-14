@@ -7,7 +7,15 @@ import * as fs from "fs";
 
 let variables: string[] = [];
 
+export type SliderData = {
+	variableName: string;
+	step: number;
+	min: number;
+	max: number;
+};
+
 let variable_inputs: string[] = [];
+let sliders: SliderData[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
@@ -45,7 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
 				const guiPanelProvider = new GUIPanelProvider(
 					context,
 					variables,
-					variable_inputs
+					variable_inputs,
+					sliders
 				);
 				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
 					guiPanel.webview
@@ -157,6 +166,14 @@ export function activate(context: vscode.ExtensionContext) {
 		(newVariables: string[]) => {
 			guiLogger.appendLine(`Setting variables: ${newVariables}`);
 			variable_inputs = newVariables;
+		}
+	);
+
+	const setSlidersCommand = vscode.commands.registerCommand(
+		"gui-toolbox.setSliders",
+		(newSliders: SliderData[]) => {
+			guiLogger.appendLine(`Setting sliders: ${newSliders}`);
+			sliders = newSliders;
 		}
 	);
 

@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import { SliderData } from "./extension";
 
 export class GUIPanelProvider {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly variables: string[],
-		private readonly variable_inputs: string[]
+		private readonly variable_inputs: string[],
+		private readonly sliders: SliderData[]
 	) {}
 
 	public getWebviewContent(webview: vscode.Webview): string {
@@ -53,6 +55,10 @@ export class GUIPanelProvider {
 				`const VARIABLE_INPUTS = ${JSON.stringify(
 					this.variable_inputs
 				)};`
+			)
+			.replace(
+				"const SLIDERS = [];",
+				`const SLIDERS = ${JSON.stringify(this.sliders)};`
 			);
 
 		return html;

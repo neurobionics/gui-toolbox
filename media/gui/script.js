@@ -181,18 +181,48 @@ const variableInputsContainer = document.getElementById(
 );
 VARIABLE_INPUTS.forEach((variable) => {
 	const variable_input = document.createElement("div");
-	variable_input.className = "variable_input";
+	variable_input.className = "variableInput";
 
 	const variable_name = document.createElement("label");
-	variable_name.textContent = variable;
+	variable_name.textContent = variable + ": ";
 	variable_input.appendChild(variable_name);
 
 	const variable_input_field = document.createElement("input");
 	variable_input_field.type = "number";
 	variable_input_field.value = 0;
-	variable_input_field.id = variable;
+	variable_input_field.id = "variable" + variable;
 
 	variable_input.appendChild(variable_name);
 	variable_input.appendChild(variable_input_field);
 	variableInputsContainer.appendChild(variable_input);
+});
+
+const slidersContainer = document.getElementById("slidersContainer");
+SLIDERS.forEach((slider) => {
+	const sliderDiv = document.createElement("div");
+	sliderDiv.className = "sliderInput";
+
+	const sliderLabel = document.createElement("label");
+	sliderLabel.textContent = slider.variableName + ": ";
+	sliderDiv.appendChild(sliderLabel);
+
+	const sliderInput = document.createElement("input");
+	sliderInput.type = "range";
+	sliderInput.min = slider.min;
+	sliderInput.max = slider.max;
+	sliderInput.step = slider.step;
+	sliderInput.value = (slider.min + slider.max) / 2;
+	sliderInput.id = "slider" + slider.variableName;
+
+	const sliderValue = document.createElement("span");
+	sliderValue.textContent = sliderInput.value;
+	sliderDiv.appendChild(sliderValue);
+
+	sliderInput.addEventListener("input", function () {
+		sliderValue.textContent = sliderInput.value;
+	});
+
+	sliderDiv.appendChild(sliderInput);
+	sliderDiv.appendChild(sliderValue);
+	slidersContainer.appendChild(sliderDiv);
 });
