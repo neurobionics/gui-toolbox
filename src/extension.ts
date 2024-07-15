@@ -17,6 +17,7 @@ let server_data: { [key: string]: number } = {};
 
 let variable_inputs: string[] = [];
 let sliders: SliderData[] = [];
+let buttons: string[] = [];
 
 let dynamicPackage: any = null;
 
@@ -57,7 +58,8 @@ export function activate(context: vscode.ExtensionContext) {
 					context,
 					variables,
 					variable_inputs,
-					sliders
+					sliders,
+					buttons
 				);
 				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
 					guiPanel.webview
@@ -108,6 +110,43 @@ export function activate(context: vscode.ExtensionContext) {
 								}
 							);
 							break;
+						}
+						case "buttonClicked": {
+							guiLogger.appendLine(
+								`Button clicked: ${message.data}`
+							);
+
+							if (!client) {
+								vscode.window.showErrorMessage(
+									"Not connected to gRPC server"
+								);
+								return;
+							}
+
+							client.CallFunction(
+								{ name: message.data },
+								(
+									error: grpc.ServiceError | null,
+									response: any
+								) => {
+									if (error) {
+										console.error(
+											"Error sending message:",
+											error
+										);
+										guiLogger.appendLine(
+											`Error sending message: ${error.message}`
+										);
+									} else {
+										console.log(
+											"Message sent successfully"
+										);
+										guiLogger.appendLine(
+											`Message sent successfully: ${message.data}`
+										);
+									}
+								}
+							);
 						}
 					}
 				});
@@ -233,11 +272,21 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	const setButtonsCommand = vscode.commands.registerCommand(
+		"gui-toolbox.setButtons",
+		(newButtons: string[]) => {
+			guiLogger.appendLine(`Setting buttons: ${newButtons}`);
+			buttons = newButtons;
+		}
+	);
+
 	context.subscriptions.push(
 		startListeningCommand,
 		sendMessageCommand,
 		openGUIPanelCommand,
-		setVariablesCommand
+		setVariablesCommand,
+		setSlidersCommand,
+		setButtonsCommand
 	);
 }
 

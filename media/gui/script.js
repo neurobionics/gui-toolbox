@@ -243,7 +243,7 @@ SLIDERS.forEach((slider) => {
 	slidersContainer.appendChild(sliderDiv);
 });
 
-function sendVariableInputs() {
+function sendVariables() {
 	const values = getVariablesAndSliders();
 
 	vscode.postMessage({
@@ -269,3 +269,18 @@ function getVariablesAndSliders() {
 
 	return values;
 }
+
+const buttonsContainer = document.getElementById("buttonsContainer");
+BUTTONS.forEach((button) => {
+	const buttonElement = document.createElement("button");
+	buttonElement.textContent = button;
+
+	buttonElement.addEventListener("click", () => {
+		vscode.postMessage({
+			type: "buttonClicked",
+			data: button,
+		});
+	});
+
+	buttonsContainer.appendChild(buttonElement);
+});

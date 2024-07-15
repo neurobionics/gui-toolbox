@@ -126,45 +126,33 @@ function setSliderInputs() {
 	});
 }
 
-function addButtonInputs() {
+function addButton() {
 	/* We wanna get the button name, callback function name, and arguments that are variable names */
 	const newButton = document.createElement("div");
 	newButton.className = "buttonInput";
-	const buttonNameInput = document.createElement("input");
-	buttonNameInput.type = "text";
-	buttonNameInput.placeholder = "Button Name";
 	const callbackFunctionInput = document.createElement("input");
 	callbackFunctionInput.type = "text";
 	callbackFunctionInput.placeholder = "Callback Name";
-	const argumentsInput = document.createElement("input");
-	argumentsInput.type = "text";
-	argumentsInput.placeholder = "Arguments (comma separated)";
 
-	newButton.appendChild(buttonNameInput);
 	newButton.appendChild(callbackFunctionInput);
-	newButton.appendChild(argumentsInput);
-
 	buttonInputsContainer.appendChild(newButton);
 }
 
-function removeButtonInputs() {
+function removeButton() {
 	const buttons = buttonInputsContainer.getElementsByClassName("buttonInput");
 	if (buttons.length > 0) {
 		buttonInputsContainer.removeChild(buttons[buttons.length - 1]);
 	}
 }
 
-function setButtonInputs() {
+function setButtons() {
 	const buttons = buttonInputsContainer.getElementsByClassName("buttonInput");
 	const buttonData = [];
 	for (let button of buttons) {
-		const inputs = button.getElementsByTagName("input");
-		const buttonObj = {
-			buttonName: inputs[0].value.trim(),
-			callbackFunctionName: inputs[1].value.trim(),
-			arguments: inputs[2].value.split(",").map((arg) => arg.trim()),
-		};
-		buttonData.push(buttonObj);
+		const callbackName = button
+			.getElementsByTagName("input")[0]
+			.value.trim();
+		buttonData.push(callbackName);
 	}
 	console.log(buttonData);
 	vscode.postMessage({

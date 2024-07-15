@@ -8,7 +8,8 @@ export class GUIPanelProvider {
 		private readonly context: vscode.ExtensionContext,
 		private readonly variables: string[],
 		private readonly variable_inputs: string[],
-		private readonly sliders: SliderData[]
+		private readonly sliders: SliderData[],
+		private readonly buttons: string[]
 	) {}
 
 	public getWebviewContent(webview: vscode.Webview): string {
@@ -59,6 +60,10 @@ export class GUIPanelProvider {
 			.replace(
 				"const SLIDERS = [];",
 				`const SLIDERS = ${JSON.stringify(this.sliders)};`
+			)
+			.replace(
+				"const BUTTONS = [];",
+				`const BUTTONS = ${JSON.stringify(this.buttons)};`
 			);
 
 		return html;
