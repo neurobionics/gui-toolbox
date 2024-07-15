@@ -244,34 +244,23 @@ SLIDERS.forEach((slider) => {
 });
 
 function sendVariableInputs() {
-	const values = getAndUpdateVariableInputs();
+	const values = getVariablesAndSliders();
+
 	vscode.postMessage({
-		type: "sendVariableInputs",
+		type: "sendVariables",
 		data: values,
 	});
 }
 
-function getAndUpdateVariableInputs() {
+function getVariablesAndSliders() {
 	const values = {};
+
 	VARIABLE_INPUTS.forEach((variable) => {
 		values[variable] = parseFloat(
 			document.getElementById("variable" + variable).value
 		);
 	});
 
-	return values;
-}
-
-function sendSliderValues() {
-	const values = getAndUpdateSliders();
-	vscode.postMessage({
-		type: "sendSliderValues",
-		data: values,
-	});
-}
-
-function getAndUpdateSliders() {
-	const values = {};
 	SLIDERS.forEach((slider) => {
 		values[slider.variableName] = parseFloat(
 			document.getElementById("slider" + slider.variableName).value

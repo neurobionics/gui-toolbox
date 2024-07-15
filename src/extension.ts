@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				guiPanel.webview.onDidReceiveMessage((message) => {
 					switch (message.type) {
-						case "sendVariableInputs": {
+						case "sendVariables": {
 							guiLogger.appendLine(
 								`Received variable inputs: ${JSON.stringify(
 									message.data
