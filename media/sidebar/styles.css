@@ -40,6 +40,18 @@ body {
 	margin: 5px;
 }
 
+.guiUtility {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
+.guiUtility button {
+	max-width: 100%;
+	flex: 1;
+}
+
 #variableInputsContainer {
 	display: flex;
 	flex-direction: column;
