@@ -40,6 +40,9 @@ messageInput.addEventListener("change", () => {
 });
 
 openGUIPanelButton.addEventListener("click", () => {
+	setVariableInputs();
+	setSliderInputs();
+	setButtons();
 	vscode.postMessage({
 		type: "openGUIPanel",
 	});

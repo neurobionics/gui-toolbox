@@ -9,6 +9,13 @@ body {
 	padding: 5%;
 }
 
+.inputsHeading {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
 .variableInputs {
 	display: flex;
 	flex-direction: column;
