@@ -4,13 +4,12 @@ const FPS = 120; // Frames per second, can be altered in the future
 const FRAME_DURATION = 1000 / FPS; // Duration of each frame in milliseconds
 
 let data = new Array(MAX_POINTS).fill(null);
-let xData = new Array(MAX_POINTS).fill(0);
+let xData = Array.from({ length: MAX_POINTS }, (_, i) => i * (10 / MAX_POINTS));
 let yMin = null;
 let yMax = null;
 let autoScale = true;
 
 let layout = {
-	// title: "Real-time Plot",
 	font: { color: "#ffffff" },
 	paper_bgcolor: "#1e1e1e",
 	plot_bgcolor: "#1e1e1e",
@@ -18,7 +17,7 @@ let layout = {
 		gridcolor: "#444",
 		zerolinecolor: "#666",
 		title: "Time (s)",
-		range: [0, 10], // Fixed 10-second window
+		range: [0, 10], // Initial 10-second window
 	},
 	yaxis: {
 		gridcolor: "#444",
@@ -73,7 +72,16 @@ function resetPlot() {
 	yMin = null;
 	yMax = null;
 	startTime = Date.now();
-	Plotly.update("plot", { x: [xData], y: [data] });
+	Plotly.update(
+		"plot",
+		{
+			x: [xData],
+			y: [data],
+		},
+		{
+			xaxis: { range: [0, 10] },
+		}
+	);
 	updateYAxisRange();
 }
 
@@ -131,6 +139,8 @@ function efficientUpdate(newData) {
 	xData.push(currentTime);
 	xData.shift();
 
+	const xRange = [Math.max(0, currentTime - 10), currentTime];
+
 	Plotly.update(
 		"plot",
 		{
@@ -138,12 +148,11 @@ function efficientUpdate(newData) {
 			y: [data],
 		},
 		{
-			xaxis: { range: [currentTime - 10, currentTime] },
+			xaxis: { range: xRange },
 		}
 	);
 
 	if (count % 10 === 0) {
-		// Update y-axis less frequently
 		updateYAxisRange();
 	}
 
@@ -179,6 +188,9 @@ window.addEventListener("message", (event) => {
 const variableInputsContainer = document.getElementById(
 	"variableInputsContainer"
 );
+// if (VARIABLE_INPUTS.length > 0) {
+// 	variableInputsContainer.hidden = false;
+// }
 VARIABLE_INPUTS.forEach((variable) => {
 	const variable_input = document.createElement("div");
 	variable_input.className = "variableInput";
@@ -198,6 +210,10 @@ VARIABLE_INPUTS.forEach((variable) => {
 });
 
 const slidersContainer = document.getElementById("slidersContainer");
+// if (SLIDERS.length > 0) {
+// 	slidersContainer.hidden = false;
+// }
+
 SLIDERS.forEach((slider) => {
 	const sliderDiv = document.createElement("div");
 	sliderDiv.className = "sliderInput";
@@ -226,3 +242,41 @@ SLIDERS.forEach((slider) => {
 	sliderDiv.appendChild(sliderValue);
 	slidersContainer.appendChild(sliderDiv);
 });
+
+function sendVariableInputs() {
+	const values = getAndUpdateVariableInputs();
+	vscode.postMessage({
+		type: "sendVariableInputs",
+		data: values,
+	});
+}
+
+function getAndUpdateVariableInputs() {
+	const values = {};
+	VARIABLE_INPUTS.forEach((variable) => {
+		values[variable] = parseFloat(
+			document.getElementById("variable" + variable).value
+		);
+	});
+
+	return values;
+}
+
+function sendSliderValues() {
+	const values = getAndUpdateSliders();
+	vscode.postMessage({
+		type: "sendSliderValues",
+		data: values,
+	});
+}
+
+function getAndUpdateSliders() {
+	const values = {};
+	SLIDERS.forEach((slider) => {
+		values[slider.variableName] = parseFloat(
+			document.getElementById("slider" + slider.variableName).value
+		);
+	});
+
+	return values;
+}

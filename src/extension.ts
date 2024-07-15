@@ -5,14 +5,15 @@ import { GuiToolboxSidebarProvider } from "./sidebarPanel";
 import { GUIPanelProvider } from "./guiPanel";
 import * as fs from "fs";
 
-let variables: string[] = [];
-
 export type SliderData = {
 	variableName: string;
 	step: number;
 	min: number;
 	max: number;
 };
+
+let variables: string[] = [];
+let server_data: { [key: string]: number } = {};
 
 let variable_inputs: string[] = [];
 let sliders: SliderData[] = [];
@@ -59,6 +60,47 @@ export function activate(context: vscode.ExtensionContext) {
 				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
 					guiPanel.webview
 				);
+
+				guiPanel.webview.onDidReceiveMessage((message) => {
+					switch (message.type) {
+						case "sendVariableInputs": {
+							vscode.window.showInformationMessage(
+								"Received variable inputs" + message.data
+							);
+
+							if (!client) {
+								vscode.window.showErrorMessage(
+									"Not connected to gRPC server"
+								);
+								return;
+							}
+
+							client.SendData(
+								{ content: message.data },
+								(error: Error | null, response: any) => {
+									if (error) {
+										console.error(
+											"Error sending message:",
+											error
+										);
+										guiLogger.appendLine(
+											`Error sending message: ${error.message}`
+										);
+									} else {
+										console.log(
+											"Message sent successfully"
+										);
+										guiLogger.appendLine(
+											`Message sent successfully: ${message.data}`
+										);
+									}
+								}
+							);
+							break;
+						}
+					}
+				});
+
 				guiPanel.onDidDispose(() => {
 					guiPanel = undefined;
 				});
@@ -83,7 +125,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// Parse the proto file to extract variable names
 			const protoContent = fs.readFileSync(protoPath, "utf8");
-			variables = extractVariables(protoContent);
 
 			guiLogger.appendLine(
 				`Creating gRPC client for ${ipAddress} using proto file: ${protoPath}`
@@ -107,16 +148,20 @@ export function activate(context: vscode.ExtensionContext) {
 				grpc.credentials.createInsecure()
 			);
 
-			const call = client.getUpdates({});
+			const call = client.ReceiveData({});
 
 			call.on("data", (message: any) => {
+				server_data = message.values;
+
+				// get all the variable names ie the keys
+				variables = Object.keys(server_data);
 				guiLogger.appendLine(
-					`Received from Python: ${JSON.stringify(message)}`
+					`Received from Python: ${JSON.stringify(variables)}`
 				);
 				if (guiPanel) {
 					guiPanel.webview.postMessage({
 						type: "updatePlot",
-						data: message,
+						data: message.values,
 					});
 				}
 			});
@@ -183,24 +228,6 @@ export function activate(context: vscode.ExtensionContext) {
 		openGUIPanelCommand,
 		setVariablesCommand
 	);
-}
-
-function extractVariables(protoContent: string): string[] {
-	const messageRegex = /message\s+UpdateMessage\s*{([^}]*)}/;
-	const fieldRegex = /\s*(\w+)\s+(\w+)\s*=\s*\d+;/g;
-
-	const messageMatch = protoContent.match(messageRegex);
-	if (!messageMatch) {
-		return [];
-	}
-
-	const messageContent = messageMatch[1];
-	const variables: string[] = [];
-	let match;
-	while ((match = fieldRegex.exec(messageContent)) !== null) {
-		variables.push(match[2]); // match[2] is the variable name
-	}
-	return variables;
 }
 
 export function deactivate() {}
