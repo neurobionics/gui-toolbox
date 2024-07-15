@@ -267,7 +267,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const setSlidersCommand = vscode.commands.registerCommand(
 		"gui-toolbox.setSliders",
 		(newSliders: SliderData[]) => {
-			guiLogger.appendLine(`Setting sliders: ${newSliders}`);
+			guiLogger.appendLine(
+				`Setting sliders: ${JSON.stringify(newSliders)}`
+			);
 			sliders = newSliders;
 		}
 	);

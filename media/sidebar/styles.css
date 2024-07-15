@@ -120,12 +120,27 @@ body {
 }
 
 .sliderInput {
-	/* each div has 4 input text boxes and we want them to display as a 2x2 grid */
+	/* Use CSS Grid to layout the input boxes */
 	display: grid;
 	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto auto auto;
 	gap: 5px;
 	padding: 5px;
 	border: #808080 1px solid;
+}
+
+.sliderInput input:nth-child(1) {
+	grid-column: 1 / -1; /* Span the first input across both columns */
+}
+
+.sliderInput input:nth-child(2),
+.sliderInput input:nth-child(3) {
+	grid-column: span 1; /* Each input occupies one column */
+}
+
+.sliderInput input:nth-child(4),
+.sliderInput input:nth-child(5) {
+	grid-column: span 1; /* Each input occupies one column */
 }
 
 .sliderInput input {

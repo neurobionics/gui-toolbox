@@ -19,7 +19,13 @@ VARIABLE_INPUTS.forEach((variable) => {
 });
 
 SLIDERS.forEach((slider) => {
-	addSliderInput(slider.variableName, slider.step, slider.min, slider.max);
+	addSliderInput(
+		slider.variableName,
+		slider.defaultValue,
+		slider.step,
+		slider.min,
+		slider.max
+	);
 });
 
 BUTTONS.forEach((button) => {
@@ -130,6 +136,7 @@ function setVariableInputs() {
 
 function addSliderInput(
 	variableName = undefined,
+	defaultValue = undefined,
 	step = undefined,
 	min = undefined,
 	max = undefined
@@ -143,6 +150,14 @@ function addSliderInput(
 
 	if (variableName) {
 		variableNameInput.value = variableName;
+	}
+
+	const defaultValueInput = document.createElement("input");
+	defaultValueInput.type = "number";
+	defaultValueInput.placeholder = "Default Value";
+
+	if (defaultValue) {
+		defaultValueInput.value = defaultValue;
 	}
 
 	const stepInput = document.createElement("input");
@@ -170,6 +185,7 @@ function addSliderInput(
 	}
 
 	newSlider.appendChild(variableNameInput);
+	newSlider.appendChild(defaultValueInput);
 	newSlider.appendChild(stepInput);
 	newSlider.appendChild(minInput);
 	newSlider.appendChild(maxInput);
@@ -191,9 +207,10 @@ function setSliderInputs() {
 		const inputs = slider.getElementsByTagName("input");
 		const sliderObj = {
 			variableName: inputs[0].value.trim(),
-			step: parseFloat(inputs[1].value),
-			min: parseFloat(inputs[2].value),
-			max: parseFloat(inputs[3].value),
+			defaultValue: parseFloat(inputs[1].value),
+			step: parseFloat(inputs[2].value),
+			min: parseFloat(inputs[3].value),
+			max: parseFloat(inputs[4].value),
 		};
 		sliderData.push(sliderObj);
 	}

@@ -227,7 +227,7 @@ SLIDERS.forEach((slider) => {
 	sliderInput.min = slider.min;
 	sliderInput.max = slider.max;
 	sliderInput.step = slider.step;
-	sliderInput.value = (slider.min + slider.max) / 2;
+	sliderInput.value = slider.defaultValue;
 	sliderInput.id = "slider" + slider.variableName;
 
 	const sliderValue = document.createElement("span");
