@@ -1,10 +1,17 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import { SliderData } from "./extension";
 
 export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 	private protoFilePath: string | null = null;
-	constructor(private readonly context: vscode.ExtensionContext) {}
+	private webviewView: vscode.WebviewView | undefined;
+	constructor(
+		private context: vscode.ExtensionContext,
+		private variable_inputs: string[],
+		private sliders: SliderData[],
+		private buttons: string[]
+	) {}
 
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
@@ -20,9 +27,12 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 			],
 		};
 
-		webviewView.webview.html = this._getWebviewContent(webviewView.webview);
+		this.webviewView = webviewView;
+		this.webviewView.webview.html = this._getWebviewContent(
+			webviewView.webview
+		);
 
-		webviewView.webview.onDidReceiveMessage(async (data) => {
+		this.webviewView.webview.onDidReceiveMessage(async (data) => {
 			switch (data.type) {
 				case "protoFile": {
 					this.protoFilePath = data.protoFilePath;
@@ -71,6 +81,17 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					);
 					break;
 				}
+				case "saveGUIPanel": {
+					vscode.window.showInformationMessage("Saving GUI Panel");
+					vscode.commands.executeCommand("gui-toolbox.saveGUIPanel");
+					break;
+				}
+				case "loadGUIPanel": {
+					vscode.window.showInformationMessage("Loading GUI Panel");
+					vscode.commands.executeCommand("gui-toolbox.loadGUIPanel");
+
+					break;
+				}
 			}
 		});
 	}
@@ -117,6 +138,35 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 			.replace('href="styles.css"', `href="${cssUri}"`)
 			.replace('src="script.js"', `src="${scriptUri}"`);
 
+		// Insert variables into HTML
+		html = html
+			.replace(
+				"const VARIABLE_INPUTS = [];",
+				`const VARIABLE_INPUTS = ${JSON.stringify(
+					this.variable_inputs
+				)};`
+			)
+			.replace(
+				"const SLIDERS = [];",
+				`const SLIDERS = ${JSON.stringify(this.sliders)};`
+			)
+			.replace(
+				"const BUTTONS = [];",
+				`const BUTTONS = ${JSON.stringify(this.buttons)};`
+			);
+
 		return html;
+	}
+
+	public update(data: any) {
+		this.variable_inputs = data.variable_inputs;
+		this.sliders = data.sliders;
+		this.buttons = data.buttons;
+
+		if (this.webviewView) {
+			this.webviewView.webview.html = this._getWebviewContent(
+				this.webviewView.webview
+			);
+		}
 	}
 }

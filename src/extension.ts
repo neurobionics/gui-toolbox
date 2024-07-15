@@ -4,6 +4,7 @@ import * as protoLoader from "@grpc/proto-loader";
 import { GuiToolboxSidebarProvider } from "./sidebarPanel";
 import { GUIPanelProvider } from "./guiPanel";
 import * as fs from "fs";
+import * as path from "path";
 
 export type SliderData = {
 	variableName: string;
@@ -13,8 +14,6 @@ export type SliderData = {
 };
 
 let variables: string[] = [];
-let server_data: { [key: string]: number } = {};
-
 let variable_inputs: string[] = [];
 let sliders: SliderData[] = [];
 let buttons: string[] = [];
@@ -31,7 +30,12 @@ export function activate(context: vscode.ExtensionContext) {
 	let client: any = null;
 	let guiPanel: vscode.WebviewPanel | undefined;
 
-	const sidebarProvider = new GuiToolboxSidebarProvider(context);
+	const sidebarProvider = new GuiToolboxSidebarProvider(
+		context,
+		variable_inputs,
+		sliders,
+		buttons
+	);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			"guiToolboxSidebar",
@@ -110,9 +114,6 @@ export function activate(context: vscode.ExtensionContext) {
 											`Error sending message: ${error.message}`
 										);
 									} else {
-										console.log(
-											"Message sent successfully"
-										);
 										guiLogger.appendLine(
 											`Message sent successfully: ${JSON.stringify(
 												requestData
@@ -150,9 +151,6 @@ export function activate(context: vscode.ExtensionContext) {
 											`Error sending message: ${error.message}`
 										);
 									} else {
-										console.log(
-											"Message sent successfully"
-										);
 										guiLogger.appendLine(
 											`Message sent successfully: ${message.data}`
 										);
@@ -213,10 +211,8 @@ export function activate(context: vscode.ExtensionContext) {
 			const call = client.ReceiveData({});
 
 			call.on("data", (message: any) => {
-				server_data = message.values;
-
 				// get all the variable names ie the keys
-				variables = Object.keys(server_data);
+				variables = Object.keys(message.values);
 				// guiLogger.appendLine(
 				// 	`Received from Python: ${JSON.stringify(variables)}`
 				// );
@@ -265,9 +261,70 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	const saveGUIPanelCommand = vscode.commands.registerCommand(
+		"gui-toolbox.saveGUIPanel",
+		async () => {
+			// save all the variables, sliders, buttons, and other useful data to a .gui file that can then be loaded later
+			// the .gui file is basically a JSON file with the variables, variable_inputs, sliders, buttons, and maybe the guipanel layout
+
+			const uri = await vscode.window.showSaveDialog({
+				defaultUri: vscode.Uri.file(
+					path.join(vscode.workspace.rootPath || "", "gui-panel.gui")
+				),
+				filters: {
+					"GUI Panel": ["gui"],
+				},
+			});
+			if (uri) {
+				const data = {
+					variables,
+					variable_inputs,
+					sliders,
+					buttons,
+				};
+				fs.writeFileSync(uri.fsPath, JSON.stringify(data, null, 2));
+			}
+		}
+	);
+
+	const loadGUIPanelCommand = vscode.commands.registerCommand(
+		"gui-toolbox.loadGUIPanel",
+		() => {
+			vscode.window
+				.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					filters: {
+						Proto: ["gui"],
+					},
+				})
+				.then((uri) => {
+					if (uri) {
+						const filePath = uri[0].fsPath;
+						const data = JSON.parse(
+							fs.readFileSync(filePath, "utf8")
+						);
+						variables = data.variables;
+						variable_inputs = data.variable_inputs;
+						sliders = data.sliders;
+						buttons = data.buttons;
+
+						vscode.commands.executeCommand(
+							"gui-toolbox.openGUIPanel"
+						);
+
+						// we also want these variables and data to be sent to the sidebar view
+						sidebarProvider.update(data);
+						guiLogger.appendLine("Updated sidebar view");
+					}
+				});
+		}
+	);
+
 	context.subscriptions.push(
 		startListeningCommand,
 		openGUIPanelCommand,
+		loadGUIPanelCommand,
 		setVariablesCommand,
 		setSlidersCommand,
 		setButtonsCommand

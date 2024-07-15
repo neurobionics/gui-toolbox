@@ -10,8 +10,22 @@ const variableInputsContainer = document.getElementById(
 const sliderInputsContainer = document.getElementById("sliderInputsContainer");
 const buttonInputsContainer = document.getElementById("buttonInputsContainer");
 
+const saveGUIPanelButton = document.getElementById("saveGUIPanelButton");
+const loadGUIPanelButton = document.getElementById("loadGUIPanelButton");
+
+VARIABLE_INPUTS.forEach((variable) => {
+	addVariableInput(variable);
+});
+
+SLIDERS.forEach((slider) => {
+	addSliderInput(slider.variableName, slider.step, slider.min, slider.max);
+});
+
+BUTTONS.forEach((button) => {
+	addButton(button);
+});
+
 startButton.addEventListener("click", () => {
-	console.log("startButton clicked");
 	vscode.postMessage({
 		type: "startListening",
 		ipAddress: ipAddressInput.value,
@@ -39,11 +53,31 @@ openGUIPanelButton.addEventListener("click", () => {
 	});
 });
 
-function addVariableInput() {
+saveGUIPanelButton.addEventListener("click", () => {
+	setVariableInputs();
+	setSliderInputs();
+	setButtons();
+	vscode.postMessage({
+		type: "saveGUIPanel",
+	});
+});
+
+loadGUIPanelButton.addEventListener("click", () => {
+	vscode.postMessage({
+		type: "loadGUIPanel",
+	});
+});
+
+function addVariableInput(variableName = undefined) {
 	const newInput = document.createElement("input");
 	newInput.type = "text";
-	newInput.placeholder = "Variable name";
+	newInput.placeholder = "Variable Name";
 	newInput.id = `variableInput${variableInputsContainer.children.length}`;
+
+	if (variableName) {
+		newInput.value = variableName;
+	}
+
 	variableInputsContainer.appendChild(newInput);
 }
 
@@ -60,14 +94,18 @@ function setVariableInputs() {
 	for (let input of inputs) {
 		variables.push(input.value.trim());
 	}
-	console.log(variables);
 	vscode.postMessage({
 		type: "setVariables",
 		variables: variables,
 	});
 }
 
-function addSliderInput() {
+function addSliderInput(
+	variableName = undefined,
+	step = undefined,
+	min = undefined,
+	max = undefined
+) {
 	// we wanna get the variable name, the min, the max, and the step from the user
 	const newSlider = document.createElement("div");
 	newSlider.className = "sliderInput";
@@ -75,15 +113,33 @@ function addSliderInput() {
 	variableNameInput.type = "text";
 	variableNameInput.placeholder = "Variable Name";
 
+	if (variableName) {
+		variableNameInput.value = variableName;
+	}
+
 	const stepInput = document.createElement("input");
 	stepInput.type = "number";
 	stepInput.placeholder = "Step";
+
+	if (step) {
+		stepInput.value = step;
+	}
+
 	const minInput = document.createElement("input");
 	minInput.type = "number";
 	minInput.placeholder = "Min";
+
+	if (min) {
+		minInput.value = min;
+	}
+
 	const maxInput = document.createElement("input");
 	maxInput.type = "number";
 	maxInput.placeholder = "Max";
+
+	if (max) {
+		maxInput.value = max;
+	}
 
 	newSlider.appendChild(variableNameInput);
 	newSlider.appendChild(stepInput);
@@ -113,20 +169,23 @@ function setSliderInputs() {
 		};
 		sliderData.push(sliderObj);
 	}
-	console.log(sliderData);
 	vscode.postMessage({
 		type: "setSliders",
 		sliders: sliderData,
 	});
 }
 
-function addButton() {
+function addButton(callbackName = undefined) {
 	/* We wanna get the button name, callback function name, and arguments that are variable names */
 	const newButton = document.createElement("div");
 	newButton.className = "buttonInput";
 	const callbackFunctionInput = document.createElement("input");
 	callbackFunctionInput.type = "text";
 	callbackFunctionInput.placeholder = "Callback Name";
+
+	if (callbackName) {
+		callbackFunctionInput.value = callbackName;
+	}
 
 	newButton.appendChild(callbackFunctionInput);
 	buttonInputsContainer.appendChild(newButton);
@@ -148,7 +207,6 @@ function setButtons() {
 			.value.trim();
 		buttonData.push(callbackName);
 	}
-	console.log(buttonData);
 	vscode.postMessage({
 		type: "setButtons",
 		buttons: buttonData,
