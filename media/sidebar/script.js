@@ -15,7 +15,7 @@ const saveGUIPanelButton = document.getElementById("saveGUIPanelButton");
 const loadGUIPanelButton = document.getElementById("loadGUIPanelButton");
 
 VARIABLE_INPUTS.forEach((variable) => {
-	addVariableInput(variable);
+	addVariableInput(variable.variableName, variable.defaultValue);
 });
 
 SLIDERS.forEach((slider) => {
@@ -75,17 +75,29 @@ loadGUIPanelButton.addEventListener("click", () => {
 	});
 });
 
-function addVariableInput(variableName = undefined) {
-	const newInput = document.createElement("input");
-	newInput.type = "text";
-	newInput.placeholder = "Variable Name";
-	newInput.id = `variableInput${variableInputsContainer.children.length}`;
+function addVariableInput(variableName = undefined, defaultValue = undefined) {
+	const variableInput = document.createElement("div");
+	variableInput.className = "variableInput";
+	variableInput.id = `variableInput${variableInputsContainer.children.length}`;
 
+	const variableNameInput = document.createElement("input");
+	variableNameInput.type = "text";
+	variableNameInput.placeholder = "Variable Name";
 	if (variableName) {
-		newInput.value = variableName;
+		variableNameInput.value = variableName;
 	}
 
-	variableInputsContainer.appendChild(newInput);
+	const defaultValueInput = document.createElement("input");
+	defaultValueInput.type = "number";
+	defaultValueInput.placeholder = "Default Value";
+
+	if (defaultValue) {
+		defaultValueInput.value = defaultValue;
+	}
+
+	variableInput.appendChild(variableNameInput);
+	variableInput.appendChild(defaultValueInput);
+	variableInputsContainer.appendChild(variableInput);
 }
 
 function removeVariableInput() {
@@ -96,11 +108,20 @@ function removeVariableInput() {
 }
 
 function setVariableInputs() {
-	const inputs = variableInputsContainer.getElementsByTagName("input");
+	const variableInputs =
+		variableInputsContainer.getElementsByClassName("variableInput");
 	const variables = [];
-	for (let input of inputs) {
-		variables.push(input.value.trim());
+
+	for (let variableInput of variableInputs) {
+		const inputs = variableInput.getElementsByTagName("input");
+
+		const variableObject = {
+			variableName: inputs[0].value.trim(),
+			defaultValue: parseFloat(inputs[1].value),
+		};
+		variables.push(variableObject);
 	}
+
 	vscode.postMessage({
 		type: "setVariables",
 		variables: variables,

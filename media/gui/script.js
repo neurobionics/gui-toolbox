@@ -196,12 +196,12 @@ VARIABLE_INPUTS.forEach((variable) => {
 	variable_input.className = "variableInput";
 
 	const variable_name = document.createElement("label");
-	variable_name.textContent = variable + ": ";
+	variable_name.textContent = variable.variableName + ": ";
 	variable_input.appendChild(variable_name);
 
 	const variable_input_field = document.createElement("input");
 	variable_input_field.type = "number";
-	variable_input_field.value = 0;
+	variable_input_field.value = variable.defaultValue;
 	variable_input_field.id = "variable" + variable;
 
 	variable_input.appendChild(variable_name);

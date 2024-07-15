@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { SliderData } from "./extension";
+import { SliderData, VariableInputData } from "./extension";
 
 export class GUIPanelProvider {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly variables: string[],
-		private readonly variable_inputs: string[],
+		private readonly variable_inputs: VariableInputData[],
 		private readonly sliders: SliderData[],
 		private readonly buttons: string[]
 	) {}

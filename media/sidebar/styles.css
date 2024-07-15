@@ -40,6 +40,20 @@ body {
 	margin: 5px;
 }
 
+.variableInput {
+	display: flex;
+	flex-direction: row;
+	gap: 5px;
+	justify-content: space-between;
+}
+
+.variableInput input {
+	flex: 1;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
 .guiUtility {
 	display: flex;
 	flex-direction: row;

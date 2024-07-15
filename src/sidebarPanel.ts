@@ -1,14 +1,14 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { SliderData } from "./extension";
+import { SliderData, VariableInputData } from "./extension";
 
 export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 	private protoFilePath: string | null = null;
 	private webviewView: vscode.WebviewView | undefined;
 	constructor(
 		private context: vscode.ExtensionContext,
-		private variable_inputs: string[],
+		private variable_inputs: VariableInputData[],
 		private sliders: SliderData[],
 		private buttons: string[]
 	) {}

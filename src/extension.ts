@@ -8,13 +8,19 @@ import * as path from "path";
 
 export type SliderData = {
 	variableName: string;
+	defaultValue: number;
 	step: number;
 	min: number;
 	max: number;
 };
 
+export type VariableInputData = {
+	variableName: string;
+	defaultValue: number;
+};
+
 let variables: string[] = [];
-let variable_inputs: string[] = [];
+let variable_inputs: VariableInputData[] = [];
 let sliders: SliderData[] = [];
 let buttons: string[] = [];
 
@@ -252,7 +258,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const setVariablesCommand = vscode.commands.registerCommand(
 		"gui-toolbox.setVariables",
-		(newVariables: string[]) => {
+		(newVariables: VariableInputData[]) => {
 			guiLogger.appendLine(`Setting variables: ${newVariables}`);
 			variable_inputs = newVariables;
 		}
