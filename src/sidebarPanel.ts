@@ -33,7 +33,7 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 				}
 				case "startListening": {
 					vscode.window.showInformationMessage(
-						"Start listening command received"
+						"Starting gRPC client"
 					);
 
 					vscode.commands.executeCommand(
@@ -42,28 +42,12 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					);
 					break;
 				}
-				case "sendMessage": {
-					vscode.window.showInformationMessage(
-						"Send message command received"
-					);
-					vscode.commands.executeCommand(
-						"gui-toolbox.sendMessage",
-						data.message
-					);
-					break;
-				}
 				case "openGUIPanel": {
-					vscode.window.showInformationMessage(
-						"Open GUI panel command received"
-					);
 					vscode.commands.executeCommand("gui-toolbox.openGUIPanel");
 					break;
 				}
 
 				case "setVariables": {
-					vscode.window.showInformationMessage(
-						"Set variables command received"
-					);
 					vscode.commands.executeCommand(
 						"gui-toolbox.setVariables",
 						data.variables
@@ -72,9 +56,6 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 				}
 
 				case "setSliders": {
-					vscode.window.showInformationMessage(
-						"Set sliders command received"
-					);
 					vscode.commands.executeCommand(
 						"gui-toolbox.setSliders",
 						data.sliders
@@ -84,9 +65,6 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 				}
 
 				case "setButtons": {
-					vscode.window.showInformationMessage(
-						"Set buttons command received"
-					);
 					vscode.commands.executeCommand(
 						"gui-toolbox.setButtons",
 						data.buttons

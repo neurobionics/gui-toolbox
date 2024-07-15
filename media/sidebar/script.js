@@ -1,7 +1,6 @@
 const vscode = acquireVsCodeApi();
 const startButton = document.getElementById("startButton");
 const ipAddressInput = document.getElementById("ipAddress");
-const messageInput = document.getElementById("messageInput");
 const protoFile = document.getElementById("protoFile");
 const openGUIPanelButton = document.getElementById("openGUIPanelButton");
 
@@ -29,14 +28,6 @@ protoFile.addEventListener("change", () => {
 		});
 	};
 	reader.readAsText(file);
-});
-
-messageInput.addEventListener("change", () => {
-	vscode.postMessage({
-		type: "sendMessage",
-		message: messageInput.value,
-	});
-	messageInput.value = "";
 });
 
 openGUIPanelButton.addEventListener("click", () => {

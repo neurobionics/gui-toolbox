@@ -43,6 +43,18 @@ export function activate(context: vscode.ExtensionContext) {
 		"gui-toolbox.openGUIPanel",
 		() => {
 			if (guiPanel) {
+				// refreshing content of the panel
+				const guiPanelProvider = new GUIPanelProvider(
+					context,
+					variables,
+					variable_inputs,
+					sliders,
+					buttons
+				);
+				guiPanel.webview.html = guiPanelProvider.getWebviewContent(
+					guiPanel.webview
+				);
+
 				guiPanel.reveal(vscode.ViewColumn.Active);
 			} else {
 				guiPanel = vscode.window.createWebviewPanel(
@@ -229,33 +241,6 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
-	const sendMessageCommand = vscode.commands.registerCommand(
-		"gui-toolbox.sendMessage",
-		(message: string) => {
-			if (!client) {
-				vscode.window.showErrorMessage("Not connected to gRPC server");
-				return;
-			}
-
-			client.sendUpdate(
-				{ content: message },
-				(error: Error | null, response: any) => {
-					if (error) {
-						console.error("Error sending message:", error);
-						guiLogger.appendLine(
-							`Error sending message: ${error.message}`
-						);
-					} else {
-						console.log("Message sent successfully");
-						guiLogger.appendLine(
-							`Message sent successfully: ${message}`
-						);
-					}
-				}
-			);
-		}
-	);
-
 	const setVariablesCommand = vscode.commands.registerCommand(
 		"gui-toolbox.setVariables",
 		(newVariables: string[]) => {
@@ -282,7 +267,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		startListeningCommand,
-		sendMessageCommand,
 		openGUIPanelCommand,
 		setVariablesCommand,
 		setSlidersCommand,
