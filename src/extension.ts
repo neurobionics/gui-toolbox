@@ -18,6 +18,8 @@ let server_data: { [key: string]: number } = {};
 let variable_inputs: string[] = [];
 let sliders: SliderData[] = [];
 
+let dynamicPackage: any = null;
+
 export function activate(context: vscode.ExtensionContext) {
 	let guiLogger = vscode.window.createOutputChannel("GUI Toolbox");
 	guiLogger.show();
@@ -64,8 +66,10 @@ export function activate(context: vscode.ExtensionContext) {
 				guiPanel.webview.onDidReceiveMessage((message) => {
 					switch (message.type) {
 						case "sendVariableInputs": {
-							vscode.window.showInformationMessage(
-								"Received variable inputs" + message.data
+							guiLogger.appendLine(
+								`Received variable inputs: ${JSON.stringify(
+									message.data
+								)}`
 							);
 
 							if (!client) {
@@ -75,9 +79,14 @@ export function activate(context: vscode.ExtensionContext) {
 								return;
 							}
 
+							const requestData = { values: message.data };
+
 							client.SendData(
-								{ content: message.data },
-								(error: Error | null, response: any) => {
+								requestData,
+								(
+									error: grpc.ServiceError | null,
+									response: any
+								) => {
 									if (error) {
 										console.error(
 											"Error sending message:",
@@ -91,7 +100,9 @@ export function activate(context: vscode.ExtensionContext) {
 											"Message sent successfully"
 										);
 										guiLogger.appendLine(
-											`Message sent successfully: ${message.data}`
+											`Message sent successfully: ${JSON.stringify(
+												requestData
+											)}`
 										);
 									}
 								}
@@ -141,9 +152,9 @@ export function activate(context: vscode.ExtensionContext) {
 			const protoDescriptor = grpc.loadPackageDefinition(
 				packageDefinition
 			) as any;
-			const dynamicService = protoDescriptor.dynamic.DynamicService;
+			dynamicPackage = protoDescriptor.dynamic;
 
-			client = new dynamicService(
+			client = new dynamicPackage.DynamicService(
 				`${ipAddress}:50051`,
 				grpc.credentials.createInsecure()
 			);
@@ -155,9 +166,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 				// get all the variable names ie the keys
 				variables = Object.keys(server_data);
-				guiLogger.appendLine(
-					`Received from Python: ${JSON.stringify(variables)}`
-				);
+				// guiLogger.appendLine(
+				// 	`Received from Python: ${JSON.stringify(variables)}`
+				// );
 				if (guiPanel) {
 					guiPanel.webview.postMessage({
 						type: "updatePlot",

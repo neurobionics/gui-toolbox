@@ -1,5 +1,5 @@
 const vscode = acquireVsCodeApi();
-const MAX_POINTS = 100; // Number of points to show in the sliding window
+const MAX_POINTS = 1000; // Number of points to show in the sliding window
 const FPS = 120; // Frames per second, can be altered in the future
 const FRAME_DURATION = 1000 / FPS; // Duration of each frame in milliseconds
 
