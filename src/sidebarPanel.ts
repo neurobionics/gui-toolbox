@@ -52,6 +52,13 @@ export class GuiToolboxSidebarProvider implements vscode.WebviewViewProvider {
 					);
 					break;
 				}
+				case "stopListening": {
+					vscode.window.showInformationMessage(
+						"Stopping gRPC client"
+					);
+					vscode.commands.executeCommand("gui-toolbox.stopListening");
+					break;
+				}
 				case "openGUIPanel": {
 					vscode.commands.executeCommand("gui-toolbox.openGUIPanel");
 					break;

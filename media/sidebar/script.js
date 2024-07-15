@@ -1,5 +1,6 @@
 const vscode = acquireVsCodeApi();
 const startButton = document.getElementById("startButton");
+const stopButton = document.getElementById("stopButton");
 const ipAddressInput = document.getElementById("ipAddress");
 const protoFile = document.getElementById("protoFile");
 const openGUIPanelButton = document.getElementById("openGUIPanelButton");
@@ -29,6 +30,12 @@ startButton.addEventListener("click", () => {
 	vscode.postMessage({
 		type: "startListening",
 		ipAddress: ipAddressInput.value,
+	});
+});
+
+stopButton.addEventListener("click", () => {
+	vscode.postMessage({
+		type: "stopListening",
 	});
 });
 

@@ -237,6 +237,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	const stopListeningCommand = vscode.commands.registerCommand(
+		"gui-toolbox.stopListening",
+		() => {
+			if (client) {
+				grpc.closeClient(client);
+				client = null;
+				guiLogger.appendLine("gRPC client stopped");
+			} else {
+				guiLogger.appendLine("No gRPC client to stop");
+			}
+		}
+	);
+
 	const setVariablesCommand = vscode.commands.registerCommand(
 		"gui-toolbox.setVariables",
 		(newVariables: string[]) => {
@@ -323,6 +336,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		startListeningCommand,
+		stopListeningCommand,
 		openGUIPanelCommand,
 		loadGUIPanelCommand,
 		setVariablesCommand,
