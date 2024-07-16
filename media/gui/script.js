@@ -1,15 +1,12 @@
 const vscode = acquireVsCodeApi();
 
-const MAX_POINTS = 1000; // Number of points to show in the sliding window
-const FPS = 120; // Frames per second, can be altered in the future
-const FRAME_DURATION = 1000 / FPS; // Duration of each frame in milliseconds
+const MAX_POINTS = 1000;
+const MAX_TRACES = 2;
+const FPS = 120;
+const FRAME_DURATION = 1000 / FPS;
 
-let data = new Array(MAX_POINTS).fill(null);
-let xData = Array.from({ length: MAX_POINTS }, (_, i) => i * (10 / MAX_POINTS));
-let yMin = null;
-let yMax = null;
-let autoScale = true;
-let traceCount = 1;
+let traces = [];
+let startTime = Date.now();
 
 let layout = {
 	font: { color: "#ffffff" },
@@ -19,13 +16,20 @@ let layout = {
 	xaxis: {
 		gridcolor: "#444",
 		zerolinecolor: "#666",
-		title: "Time (s)",
-		range: [0, 10], // Initial 10-second window
+		range: [0, 10],
 	},
 	yaxis: {
 		gridcolor: "#444",
 		zerolinecolor: "#666",
-		title: "Value",
+	},
+	legend: {
+		x: 0.5,
+		xanchor: "center",
+		y: 1,
+		yanchor: "center",
+		orientation: "h",
+		bordercolor: "#808080",
+		borderwidth: 1,
 	},
 };
 
@@ -34,149 +38,161 @@ let config = {
 	displayModeBar: false,
 };
 
-const trace = {
-	x: xData,
-	y: data,
-	type: "scatter",
-	mode: "lines",
-	line: { color: "#00ff00" },
-};
+Plotly.newPlot("plot", [], layout, config);
 
-Plotly.newPlot("plot", [trace], layout, config);
-
-let count = 0;
-let selectedVariable = "";
-let startTime = Date.now();
-
-// Populate the select element with variables
-const selectElement = document.getElementById("variableSelect");
-VARIABLES.forEach((variable) => {
-	const option = document.createElement("option");
-	option.value = variable;
-	option.textContent = variable;
-	selectElement.appendChild(option);
-});
-
-// Set initial selected variable
-if (VARIABLES.length > 0) {
-	selectedVariable = VARIABLES[0];
-	selectElement.value = selectedVariable;
+// Populate the select elements with variables
+function populateSelectOptions(selectId) {
+	const select = document.getElementById(selectId);
+	select.innerHTML = VARIABLES.map(
+		(variable) => `<option value="${variable}">${variable}</option>`
+	).join("");
 }
 
-// You can add functions here to create and manage buttons
-const variableInputsContainer = document.getElementById(
-	"variableInputsContainer"
-);
-// if (VARIABLE_INPUTS.length > 0) {
-// 	variableInputsContainer.hidden = false;
-// }
-VARIABLE_INPUTS.forEach((variable) => {
-	const variable_input = document.createElement("div");
-	variable_input.className = "variableInput";
+// Initialize the first trace
+addTrace();
 
-	const variable_name = document.createElement("label");
-	variable_name.textContent = variable.variableName + ": ";
-	variable_input.appendChild(variable_name);
+function addTrace() {
+	if (traces.length >= MAX_TRACES) {
+		return;
+	}
 
-	const variable_input_field = document.createElement("input");
-	variable_input_field.type = "number";
-	variable_input_field.value = variable.defaultValue;
-	variable_input_field.id = "variable" + variable;
+	const traceIndex = traces.length + 1;
+	const initialColor = getRandomColor();
+	const traceControls = document.getElementById("traceControls");
+	const newTraceControl = document.createElement("div");
+	newTraceControl.className = "traceControl";
+	newTraceControl.innerHTML = `
+    <div class="traceLabels">
+        <select id="variableSelect${traceIndex}" class="variableSelect"></select>
+        <input
+            class="colorPicker"
+            type="color"
+            id="color${traceIndex}"
+            name="color${traceIndex}"
+            value="${initialColor}"
+        />
+    </div>
+    `;
+	traceControls.appendChild(newTraceControl);
+	populateSelectOptions(`variableSelect${traceIndex}`);
 
-	variable_input.appendChild(variable_name);
-	variable_input.appendChild(variable_input_field);
-	variableInputsContainer.appendChild(variable_input);
-});
+	const newTrace = {
+		x: [],
+		y: [],
+		type: "scatter",
+		mode: "lines",
+		line: { color: initialColor },
+		name: `Trace ${traceIndex}`,
+	};
 
-const slidersContainer = document.getElementById("slidersContainer");
-// if (SLIDERS.length > 0) {
-// 	slidersContainer.hidden = false;
-// }
+	traces.push(newTrace);
+	Plotly.addTraces("plot", newTrace);
 
-SLIDERS.forEach((slider) => {
-	const sliderDiv = document.createElement("div");
-	sliderDiv.className = "sliderInput";
-
-	const sliderLabel = document.createElement("label");
-	sliderLabel.textContent = slider.variableName + ": ";
-	sliderDiv.appendChild(sliderLabel);
-
-	const sliderInput = document.createElement("input");
-	sliderInput.type = "range";
-	sliderInput.min = slider.min;
-	sliderInput.max = slider.max;
-	sliderInput.step = slider.step;
-	sliderInput.value = slider.defaultValue;
-	sliderInput.id = "slider" + slider.variableName;
-
-	const sliderValue = document.createElement("span");
-	sliderValue.textContent = sliderInput.value;
-	sliderDiv.appendChild(sliderValue);
-
-	sliderInput.addEventListener("input", function () {
-		sliderValue.textContent = sliderInput.value;
-	});
-
-	sliderDiv.appendChild(sliderInput);
-	sliderDiv.appendChild(sliderValue);
-	slidersContainer.appendChild(sliderDiv);
-});
-
-function sendVariables() {
-	const values = getVariablesAndSliders();
-
-	vscode.postMessage({
-		type: "sendVariables",
-		data: values,
-	});
+	// Add event listeners for variable selection and color change
+	document
+		.getElementById(`variableSelect${traceIndex}`)
+		.addEventListener("change", updatePlot);
+	document
+		.getElementById(`color${traceIndex}`)
+		.addEventListener("change", updateTraceColor);
 }
 
-function getVariablesAndSliders() {
-	const values = {};
-
-	VARIABLE_INPUTS.forEach((variable) => {
-		values[variable] = parseFloat(
-			document.getElementById("variable" + variable).value
-		);
-	});
-
-	SLIDERS.forEach((slider) => {
-		values[slider.variableName] = parseFloat(
-			document.getElementById("slider" + slider.variableName).value
-		);
-	});
-
-	return values;
+function removeTrace() {
+	if (traces.length > 1) {
+		const traceControls = document.getElementById("traceControls");
+		traceControls.lastChild.remove();
+		traces.pop();
+		Plotly.deleteTraces("plot", -1);
+	}
 }
 
-const buttonsContainer = document.getElementById("buttonsContainer");
-BUTTONS.forEach((button) => {
-	const buttonElement = document.createElement("button");
-	buttonElement.textContent = button;
+function getRandomColor() {
+	return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+}
 
-	buttonElement.addEventListener("click", () => {
-		vscode.postMessage({
-			type: "buttonClicked",
-			data: button,
-		});
+function updateTraceColor(event) {
+	const traceIndex = parseInt(event.target.id.replace("color", "")) - 1;
+	traces[traceIndex].line.color = event.target.value;
+	Plotly.restyle("plot", { "line.color": [event.target.value] }, [
+		traceIndex,
+	]);
+}
+
+function updatePlot() {
+	const currentTime = (Date.now() - startTime) / 1000;
+	const xRange = [Math.max(0, currentTime - 10), currentTime];
+
+	traces.forEach((trace, index) => {
+		const select = document.getElementById(`variableSelect${index + 1}`);
+		const selectedVariable = select.value;
+
+		if (pendingUpdate && selectedVariable in pendingUpdate) {
+			trace.x.push(currentTime);
+			trace.y.push(pendingUpdate[selectedVariable]);
+
+			if (trace.x.length > MAX_POINTS) {
+				trace.x.shift();
+				trace.y.shift();
+			}
+		}
 	});
 
-	buttonsContainer.appendChild(buttonElement);
+	Plotly.update(
+		"plot",
+		traces.map((trace) => ({ x: [trace.x], y: [trace.y] })),
+		{ xaxis: { range: xRange } }
+	);
+
+	updateYAxisRange();
+}
+
+let pendingUpdate = null;
+window.addEventListener("message", (event) => {
+	const message = event.data;
+	if (message.type === "updatePlot") {
+		pendingUpdate = message.data;
+	}
 });
+
+// Use requestAnimationFrame for smoother updates
+let lastUpdateTime = 0;
+function animationLoop(timestamp) {
+	if (timestamp - lastUpdateTime > FRAME_DURATION) {
+		if (pendingUpdate !== null) {
+			updatePlot();
+			pendingUpdate = null;
+		}
+		lastUpdateTime = timestamp;
+	}
+	requestAnimationFrame(animationLoop);
+}
+requestAnimationFrame(animationLoop);
 
 // Y-axis limit controls
 const yMinInput = document.getElementById("yMin");
 const yMaxInput = document.getElementById("yMax");
-const applyYAxisButton = document.getElementById("applyYAxis");
 
-selectElement.addEventListener("change", (event) => {
-	selectedVariable = event.target.value;
-	yMin = null;
-	yMax = null;
+let yMin = null;
+let yMax = null;
+let autoScale = true;
+
+yMinInput.addEventListener("change", () => {
+	const newYMin = yMinInput.value !== "" ? parseFloat(yMinInput.value) : null;
+	const newYMax = yMaxInput.value !== "" ? parseFloat(yMaxInput.value) : null;
+
+	if (newYMin !== null && newYMax !== null && newYMin >= newYMax) {
+		alert("Y Min must be less than Y Max");
+		return;
+	}
+
+	yMin = newYMin;
+	yMax = newYMax;
+	autoScale = yMin === null && yMax === null;
+
 	updateYAxisRange();
 });
 
-applyYAxisButton.addEventListener("click", () => {
+yMaxInput.addEventListener("change", () => {
 	const newYMin = yMinInput.value !== "" ? parseFloat(yMinInput.value) : null;
 	const newYMax = yMaxInput.value !== "" ? parseFloat(yMaxInput.value) : null;
 
@@ -196,7 +212,10 @@ function updateYAxisRange() {
 	let newYMin, newYMax;
 
 	if (autoScale) {
-		const filteredData = data.filter((d) => d !== null);
+		const allData = traces.flatMap((trace) => trace.y);
+		const filteredData = allData.filter(
+			(d) => d !== null && d !== undefined
+		);
 		if (filteredData.length > 0) {
 			const dataMin = Math.min(...filteredData);
 			const dataMax = Math.max(...filteredData);
@@ -206,9 +225,13 @@ function updateYAxisRange() {
 		}
 	} else {
 		newYMin =
-			yMin !== null ? yMin : Math.min(...data.filter((d) => d !== null));
+			yMin !== null
+				? yMin
+				: Math.min(...traces.flatMap((trace) => Math.min(...trace.y)));
 		newYMax =
-			yMax !== null ? yMax : Math.max(...data.filter((d) => d !== null));
+			yMax !== null
+				? yMax
+				: Math.max(...traces.flatMap((trace) => Math.max(...trace.y)));
 	}
 
 	if (newYMin !== undefined && newYMax !== undefined) {
@@ -216,64 +239,9 @@ function updateYAxisRange() {
 	}
 }
 
-function efficientUpdate(newData) {
-	const currentTime = (Date.now() - startTime) / 1000;
+// Add event listeners for the "Add Trace" and "Remove Trace" buttons
+document.getElementById("addTrace").addEventListener("click", addTrace);
+document.getElementById("removeTrace").addEventListener("click", removeTrace);
 
-	data.push(newData);
-	data.shift();
-
-	xData.push(currentTime);
-	xData.shift();
-
-	const xRange = [Math.max(0, currentTime - 10), currentTime];
-
-	Plotly.update(
-		"plot",
-		{
-			x: [xData],
-			y: [data],
-		},
-		{
-			xaxis: { range: xRange },
-		}
-	);
-
-	if (count % 10 === 0) {
-		updateYAxisRange();
-	}
-
-	count++;
-}
-
-// Use requestAnimationFrame for smoother updates
-let lastUpdateTime = 0;
-function animationLoop(timestamp) {
-	if (timestamp - lastUpdateTime > FRAME_DURATION) {
-		if (pendingUpdate !== null) {
-			efficientUpdate(pendingUpdate);
-			pendingUpdate = null;
-		}
-		lastUpdateTime = timestamp;
-	}
-	requestAnimationFrame(animationLoop);
-}
-requestAnimationFrame(animationLoop);
-
-let pendingUpdate = null;
-window.addEventListener("message", (event) => {
-	const message = event.data;
-	if (message.type === "updatePlot") {
-		const data = message.data;
-		if (selectedVariable in data) {
-			pendingUpdate = data[selectedVariable];
-		}
-	}
-});
-
-function getRandomColor() {
-	const letters = "0123456789ABCDEF";
-	return `#${Array.from(
-		{ length: 6 },
-		() => letters[Math.floor(Math.random() * 16)]
-	).join("")}`;
-}
+// Initialize the plot
+updatePlot();

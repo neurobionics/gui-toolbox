@@ -23,20 +23,7 @@
 		<div id="plotContainer">
 			<div id="plot"></div>
 			<div id="plotControls">
-				<div id="traceControls">
-					<div class="traceControl">
-						<div class="traceLabels">
-							<select id="variableSelect"></select>
-							<input
-								class="colorPicker"
-								type="color"
-								id="color1"
-								name="color1"
-								value="#ffffff"
-							/>
-						</div>
-					</div>
-				</div>
+				<div id="traceControls"></div>
 
 				<div id="axisControls">
 					<input
@@ -51,9 +38,8 @@
 						placeholder="Y-axis Max: Auto"
 					/>
 
-					<button id="applyYAxis">Add Trace</button>
-					<button id="applyYAxis">Remove Trace</button>
-					<button id="applyYAxis">Update</button>
+					<button onclick="addTrace()">Add Trace</button>
+					<button onclick="removeTrace()">Remove Trace</button>
 				</div>
 			</div>
 		</div>
