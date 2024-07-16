@@ -76,22 +76,23 @@ function addTrace() {
 	traceControls.appendChild(newTraceControl);
 	populateSelectOptions(`variableSelect${traceIndex}`);
 
+	const select = document.getElementById(`variableSelect${traceIndex}`);
+	const initialVariable = select.value;
+
 	const newTrace = {
 		x: [],
 		y: [],
 		type: "scatter",
 		mode: "lines",
 		line: { color: initialColor },
-		name: `Trace ${traceIndex}`,
+		name: initialVariable,
 	};
 
 	traces.push(newTrace);
 	Plotly.addTraces("plot", newTrace);
 
 	// Add event listeners for variable selection and color change
-	document
-		.getElementById(`variableSelect${traceIndex}`)
-		.addEventListener("change", updatePlot);
+	select.addEventListener("change", updateTraceName);
 	document
 		.getElementById(`color${traceIndex}`)
 		.addEventListener("change", updateTraceColor);
@@ -104,6 +105,15 @@ function removeTrace() {
 		traces.pop();
 		Plotly.deleteTraces("plot", -1);
 	}
+}
+
+function updateTraceName(event) {
+	const traceIndex =
+		parseInt(event.target.id.replace("variableSelect", "")) - 1;
+	const newName = event.target.value;
+	traces[traceIndex].name = newName;
+	Plotly.restyle("plot", { name: newName }, [traceIndex]);
+	updatePlot();
 }
 
 function getRandomColor() {
@@ -135,11 +145,18 @@ function updatePlot() {
 				trace.y.shift();
 			}
 		}
+
+		// Update the trace name to match the current selected variable
+		trace.name = selectedVariable;
 	});
 
 	Plotly.update(
 		"plot",
-		traces.map((trace) => ({ x: [trace.x], y: [trace.y] })),
+		traces.map((trace) => ({
+			x: [trace.x],
+			y: [trace.y],
+			name: trace.name,
+		})),
 		{ xaxis: { range: xRange } }
 	);
 
