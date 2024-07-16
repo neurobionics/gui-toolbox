@@ -1,7 +1,7 @@
 const vscode = acquireVsCodeApi();
 
 const MAX_POINTS = 1000;
-const MAX_TRACES = 2;
+const MAX_TRACES = 3;
 const FPS = 120;
 const FRAME_DURATION = 1000 / FPS;
 
@@ -60,7 +60,6 @@ function addTrace() {
 	const initialColor = getRandomColor();
 	const traceControls = document.getElementById("traceControls");
 	const newTraceControl = document.createElement("div");
-	newTraceControl.className = "traceControl";
 	newTraceControl.innerHTML = `
     <div class="traceLabels">
         <select id="variableSelect${traceIndex}" class="variableSelect"></select>
