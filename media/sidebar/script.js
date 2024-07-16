@@ -107,7 +107,8 @@ function addVariableInput(variableName = undefined, defaultValue = undefined) {
 }
 
 function removeVariableInput() {
-	const inputs = variableInputsContainer.getElementsByTagName("input");
+	const inputs =
+		variableInputsContainer.getElementsByClassName("variableInput");
 	if (inputs.length > 0) {
 		variableInputsContainer.removeChild(inputs[inputs.length - 1]);
 	}

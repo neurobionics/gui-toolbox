@@ -90,12 +90,15 @@ body {
 
 #buttonsContainer {
 	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	text-align: center;
+	flex-direction: row;
+	justify-content: space-between;
 	gap: 5px;
 	border: #808080 1px solid;
 	padding: 5px;
+}
+
+#buttonsContainer button {
+	width: 100%;
 }
 
 .variableSelect,

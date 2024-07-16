@@ -255,9 +255,130 @@ function updateYAxisRange() {
 	}
 }
 
-// Add event listeners for the "Add Trace" and "Remove Trace" buttons
-document.getElementById("addTrace").addEventListener("click", addTrace);
-document.getElementById("removeTrace").addEventListener("click", removeTrace);
-
 // Initialize the plot
 updatePlot();
+
+function updateContainerVisibility() {
+	const containers = [
+		{ id: "variableInputsContainer" },
+		{ id: "slidersContainer" },
+		{ id: "buttonsContainer" },
+	];
+
+	containers.forEach(({ id }) => {
+		const container = document.getElementById(id);
+		container.style.display =
+			container.children.length > 0 ? "block" : "none";
+	});
+}
+
+// Add the variable inputs, sliders, and buttons
+addVariableInputs();
+addSliders();
+addButtons();
+
+function addVariableInputs() {
+	// You can add functions here to create and manage buttons
+	const variableInputsContainer = document.getElementById(
+		"variableInputsContainer"
+	);
+	VARIABLE_INPUTS.forEach((variable) => {
+		const variable_input = document.createElement("div");
+		variable_input.className = "variableInput";
+
+		const variable_name = document.createElement("label");
+		variable_name.textContent = variable.variableName + ": ";
+		variable_input.appendChild(variable_name);
+
+		const variable_input_field = document.createElement("input");
+		variable_input_field.type = "number";
+		variable_input_field.value = variable.defaultValue;
+		variable_input_field.id = "variable" + variable;
+
+		variable_input.appendChild(variable_name);
+		variable_input.appendChild(variable_input_field);
+		variableInputsContainer.appendChild(variable_input);
+	});
+
+	updateContainerVisibility();
+}
+
+function addSliders() {
+	const slidersContainer = document.getElementById("slidersContainer");
+	SLIDERS.forEach((slider) => {
+		const sliderDiv = document.createElement("div");
+		sliderDiv.className = "sliderInput";
+
+		const sliderLabel = document.createElement("label");
+		sliderLabel.textContent = slider.variableName + ": ";
+		sliderDiv.appendChild(sliderLabel);
+
+		const sliderInput = document.createElement("input");
+		sliderInput.type = "range";
+		sliderInput.min = slider.min;
+		sliderInput.max = slider.max;
+		sliderInput.step = slider.step;
+		sliderInput.value = slider.defaultValue;
+		sliderInput.id = "slider" + slider.variableName;
+
+		const sliderValue = document.createElement("span");
+		sliderValue.textContent = sliderInput.value;
+		sliderDiv.appendChild(sliderValue);
+
+		sliderInput.addEventListener("input", function () {
+			sliderValue.textContent = sliderInput.value;
+		});
+
+		sliderDiv.appendChild(sliderInput);
+		sliderDiv.appendChild(sliderValue);
+		slidersContainer.appendChild(sliderDiv);
+	});
+
+	updateContainerVisibility();
+}
+
+function addButtons() {
+	const buttonsContainer = document.getElementById("buttonsContainer");
+	BUTTONS.forEach((button) => {
+		const buttonElement = document.createElement("button");
+		buttonElement.textContent = button;
+
+		buttonElement.addEventListener("click", () => {
+			vscode.postMessage({
+				type: "buttonClicked",
+				data: button,
+			});
+		});
+
+		buttonsContainer.appendChild(buttonElement);
+	});
+
+	updateContainerVisibility();
+}
+
+function sendVariables() {
+	const values = getVariablesAndSliders();
+
+	vscode.postMessage({
+		type: "sendVariables",
+		data: values,
+	});
+}
+
+function getVariablesAndSliders() {
+	const values = {};
+
+	VARIABLE_INPUTS.forEach((variable) => {
+		values[variable] = parseFloat(
+			document.getElementById("variable" + variable).value
+		);
+	});
+
+	SLIDERS.forEach((slider) => {
+		values[slider.variableName] = parseFloat(
+			document.getElementById("slider" + slider.variableName).value
+		);
+	});
+
+	return values;
+}
