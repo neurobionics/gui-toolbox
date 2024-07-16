@@ -268,7 +268,7 @@ function updateContainerVisibility() {
 	containers.forEach(({ id }) => {
 		const container = document.getElementById(id);
 		container.style.display =
-			container.children.length > 0 ? "block" : "none";
+			container.children.length > 0 ? "flex" : "none";
 	});
 }
 
@@ -341,6 +341,7 @@ function addButtons() {
 	const buttonsContainer = document.getElementById("buttonsContainer");
 	BUTTONS.forEach((button) => {
 		const buttonElement = document.createElement("button");
+
 		buttonElement.textContent = button;
 
 		buttonElement.addEventListener("click", () => {
