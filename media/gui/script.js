@@ -293,7 +293,7 @@ function addVariableInputs() {
 		const variable_input_field = document.createElement("input");
 		variable_input_field.type = "number";
 		variable_input_field.value = variable.defaultValue;
-		variable_input_field.id = "variable" + variable;
+		variable_input_field.id = "variable" + variable.variableName;
 
 		variable_input.appendChild(variable_name);
 		variable_input.appendChild(variable_input_field);
@@ -370,8 +370,8 @@ function getVariablesAndSliders() {
 	const values = {};
 
 	VARIABLE_INPUTS.forEach((variable) => {
-		values[variable] = parseFloat(
-			document.getElementById("variable" + variable).value
+		values[variable.variableName] = parseFloat(
+			document.getElementById("variable" + variable.variableName).value
 		);
 	});
 

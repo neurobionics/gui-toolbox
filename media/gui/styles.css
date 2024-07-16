@@ -19,6 +19,8 @@ body {
 
 #plot {
 	border: #808080 1px solid;
+	width: 100%;
+	height: 70vh;
 }
 
 #guiElementsContainer {
