@@ -29,17 +29,12 @@ body {
 }
 
 #variableInputsContainer {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	text-align: center;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, auto);
 	gap: 5px;
 	border: #808080 1px solid;
 	padding: 5px;
-}
-
-.variableInputsContainer h3 {
-	margin: 5px;
 }
 
 .variableInput {
@@ -49,6 +44,8 @@ body {
 	align-items: center;
 	gap: 5px;
 	text-align: center;
+	border: #808080 1px solid;
+	padding: 5px;
 }
 
 .variableInput input {
@@ -58,17 +55,12 @@ body {
 }
 
 #slidersContainer {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	text-align: center;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, auto);
 	gap: 5px;
 	border: #808080 1px solid;
 	padding: 5px;
-}
-
-.slidersContainer h3 {
-	margin: 5px;
 }
 
 .sliderInput {
@@ -80,6 +72,7 @@ body {
 	text-align: center;
 	padding-left: 5px;
 	padding-right: 5px;
+	border: #808080 1px solid;
 }
 
 .sliderInput input {
@@ -89,10 +82,9 @@ body {
 }
 
 #buttonsContainer {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	text-align: center;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, auto);
 	gap: 5px;
 	border: #808080 1px solid;
 	padding: 5px;
@@ -180,4 +172,19 @@ button {
 
 button:hover {
 	background-color: #005f99;
+}
+
+/* Add horizontal separators after every 4th element in the variableInputsContainer */
+.variableInput:nth-child(4n),
+.sliderInput:nth-child(4n),
+#buttonsContainer button:nth-child(4n) {
+	border-bottom: #007acc 3px solid;
+	margin-bottom: 14px;
+}
+
+.variableInput:nth-child(4n -1),
+.sliderInput:nth-child(4n -1),
+#buttonsContainer button:nth-child(4n -1) {
+	border-bottom: #007acc 3px solid;
+	margin-bottom: 14px;
 }

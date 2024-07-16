@@ -268,7 +268,7 @@ function updateContainerVisibility() {
 	containers.forEach(({ id }) => {
 		const container = document.getElementById(id);
 		container.style.display =
-			container.children.length > 0 ? "flex" : "none";
+			container.children.length > 0 ? "grid" : "none";
 	});
 }
 
